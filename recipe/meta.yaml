@@ -73,6 +73,12 @@ about:
   home: http://www.boost.org/
   license: Boost-1.0
   summary: Free peer-reviewed portable C++ source libraries.
+  description: |
+    Boost contains free C++ source libraries that work well with the C++
+    standard library. The libraries are intended to be widely useful across
+    a broad spectrum of applications.
+  doc_url: http://www.boost.org/doc/
+  dev_url: http://www.boost.org/development/
 
 extra:
   recipe-maintainers:
