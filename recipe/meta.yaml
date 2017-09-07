@@ -17,31 +17,28 @@ source:
     - PR_135.diff
 
 build:
-  number: 4
+  number: 5
   features:
-    - vc9               # [win and py27]
-    - vc14              # [win and py>=35]
+    - vc{{ vc }}   # [win]
+  run_exports:
+    # Keep boost pinned to minor version
+    - {{ pin_subpackage('boost', max_pin='x.x') }}
 
 requirements:
   build:
+    - python
+    - numpy
+    - boost-cpp {{ version }}
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
-    - python
-    - numpy 1.8.*  # [not (win and (py35 or py36))]
-    - numpy 1.9.*  # [win and py35]
-    - numpy 1.11.*  # [win and py36]
-    - vc 9              # [win and py27]
-    - vc 14             # [win and py>=35]
-    - boost-cpp {{ version }}
 
   run:
     - python
-    - numpy >=1.8  # [not (win and (py35 or py36))]
-    - numpy >=1.9  # [win and py35]
-    - numpy >=1.11  # [win and py36]
-    - vc 9              # [win and py27]
-    - vc 14             # [win and py>=35]
-    - boost-cpp {{ version }}
+    - numpy
+    # boost-cpp removed here because package has run_exports for itself
+    #    https://github.com/AnacondaRecipes/boost-cpp-feedstock/pull/1
+    # this req isn't actually necessary, as run_exports will add it.  Left here for reference.
+    # - boost-cpp {{ version }}
 
 test:
   commands:
@@ -62,10 +59,12 @@ test:
     - test -f $PREFIX/lib/libboost_{{ each_boost_lib }}.a                                                 # [unix]
     - test -f $PREFIX/lib/libboost_{{ each_boost_lib }}.dylib                                             # [osx]
     - test -f $PREFIX/lib/libboost_{{ each_boost_lib }}.so                                                # [linux]
-    - if not exist %PREFIX%\\Library\\bin\\boost_{{ each_boost_lib }}-vc90-mt-{{ win_vstr }}.dll exit 1   # [win and py27]
-    - if not exist %PREFIX%\\Library\\bin\\boost_{{ each_boost_lib }}-vc140-mt-{{ win_vstr }}.dll exit 1  # [win and py >= 35]
-    - if not exist %PREFIX%\\Library\\lib\\boost_{{ each_boost_lib }}-vc90-mt-{{ win_vstr }}.lib exit 1   # [win and py27]
-    - if not exist %PREFIX%\\Library\\lib\\boost_{{ each_boost_lib }}-vc140-mt-{{ win_vstr }}.lib exit 1  # [win and py >= 35]
+    - if not exist %PREFIX%\\Library\\bin\\boost_{{ each_boost_lib }}-vc90-mt-{{ win_vstr }}.dll exit 1   # [win and vc==9]
+    - if not exist %PREFIX%\\Library\\bin\\boost_{{ each_boost_lib }}-vc100-mt-{{ win_vstr }}.dll exit 1  # [win and vc==10]
+    - if not exist %PREFIX%\\Library\\bin\\boost_{{ each_boost_lib }}-vc140-mt-{{ win_vstr }}.dll exit 1  # [win and vc==14]
+    - if not exist %PREFIX%\\Library\\lib\\boost_{{ each_boost_lib }}-vc90-mt-{{ win_vstr }}.lib exit 1   # [win and vc==9]
+    - if not exist %PREFIX%\\Library\\lib\\boost_{{ each_boost_lib }}-vc100-mt-{{ win_vstr }}.lib exit 1   # [win and vc==10]
+    - if not exist %PREFIX%\\Library\\lib\\boost_{{ each_boost_lib }}-vc140-mt-{{ win_vstr }}.lib exit 1  # [win and vc==14]
     {% endfor %}
     - conda inspect linkages -p $PREFIX boost  # [not win]
     - conda inspect objects -p $PREFIX boost  # [osx]
