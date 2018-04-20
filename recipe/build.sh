@@ -9,41 +9,45 @@
 # http://stackoverflow.com/questions/20108407/how-do-i-compile-boost-for-os-x-64b-platforms-with-stdlibc
 
 set -x -e
-set -o pipefail
 
+INCLUDE_PATH="${PREFIX}/include"
 LIBRARY_PATH="${PREFIX}/lib"
 
-# Always build PIC code for enable static linking into other shared libraries
-CXXFLAGS="${CXXFLAGS} -fPIC"
-
-if [ "$(uname)" == "Darwin" ]; then
+if [[ ${HOST} =~ .*darwin.* ]]; then
     TOOLSET=clang
-elif [ "$(uname)" == "Linux" ]; then
+elif [[ ${HOST} =~ .*linux.* ]]; then
     TOOLSET=gcc
 fi
+
+# http://www.boost.org/build/doc/html/bbv2/tasks/crosscompile.html
+cat <<EOF > ${SRC_DIR}/tools/build/src/site-config.jam
+using ${TOOLSET} : custom : ${CXX} ;
+EOF
 
 LINKFLAGS="${LINKFLAGS} -L${LIBRARY_PATH}"
 
 ./bootstrap.sh \
     --prefix="${PREFIX}" \
+    --without-libraries=python \
+    --with-toolset=cc \
     --with-icu="${PREFIX}" \
-    --with-python="${PYTHON}" \
-    --with-python-root="${PREFIX} : ${PREFIX}/include/python${PY_VER}m ${PREFIX}/include/python${PY_VER}" \
-    2>&1 | tee bootstrap.log
+    | tee bootstrap.log 2>&1
 
-./b2 -q \
-    variant=release \
-    address-model="${ARCH}" \
-    architecture=x86 \
-    debug-symbols=off \
-    threading=multi \
-    runtime-link=shared \
-    link=static,shared \
-    toolset=${TOOLSET} \
-    python="${PY_VER}" \
-    cxxflags="${CXXFLAGS}" \
-    linkflags="${LINKFLAGS}" \
-    --layout=system \
-    --with-python \
-    -j"${CPU_COUNT}" \
-    install 2>&1 | tee b2.log
+# https://svn.boost.org/trac10/ticket/5917
+# https://stackoverflow.com/a/5244844/1005215
+sed -i.bak "s,cc,${TOOLSET},g" ${SRC_DIR}/project-config.jam
+
+./b2 -q -d+2 \
+     variant=release \
+     address-model="${ARCH}" \
+     architecture=x86 \
+     debug-symbols=off \
+     threading=multi \
+     runtime-link=shared \
+     link=static,shared \
+     toolset=${TOOLSET}-custom \
+     include="${INCLUDE_PATH}" \
+     cxxflags="${CXXFLAGS} -Wno-deprecated-declarations" \
+     linkflags="${LINKFLAGS}" \
+     --layout=system \
+     -j"${CPU_COUNT}" | tee b2.build.log 2>&1

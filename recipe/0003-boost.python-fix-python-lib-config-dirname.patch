@@ -1,0 +1,14 @@
+diff --git a/boost/tools/build/src/tools/python.jam b/boost/tools/build/src/tools/python.jam
+--- a/boost/tools/build/src/tools/python.jam	2017-10-22 16:46:24.304979710 +0100
++++ b/boost/tools/build/src/tools/python.jam	2017-10-22 17:18:40.000000000 +0100
+@@ -551,7 +551,9 @@
+         includes ?= $(prefix)/include/python$(version)$(abiflags) ;
+ 
+         local lib = $(exec-prefix)/lib ;
+-        libraries ?= $(lib)/python$(version)/config $(lib) ;
++        full-cmd = $(sys.executable)" -c \"from sysconfig import get_makefile_filename; from sys import stdout; stdout.write(get_makefile_filename())\"" ;
++        local output = [ shell-cmd $(full-cmd) ] ;
++        libraries ?= $(output:D) $(lib) ;
+     }
+ }
+ 

@@ -1,0 +1,369 @@
+--- work/tools/build/src/engine/strings.c.orig	2017-10-18 07:19:07.979454800 -0700
++++ work/tools/build/src/engine/strings.c	2017-10-18 07:18:35.509013400 -0700
+@@ -191,14 +191,22 @@
+ 
+ void string_rtrim( string * self )
+ {
++    char * p;
+     assert_invariants( self );
+-    char * p = self->value + self->size - 1;
++    p = self->value + self->size - 1;
+     for ( p; p >= self->value && ( *p == '\0' || isspace( *p ) ); *p-- = 0 );
+ }
+ 
+ #ifndef NDEBUG
+ void string_unit_test()
+ {
++    char * const original = "  \n\t\v  Foo \r\n\v \tBar\n\n\r\r\t\n\v\t \t";
++    char * const foo = "Foo    ";
++    char * const bar = "Bar\0\0\0";
++    string copy[ 1 ];
++    string foo_copy[ 1 ];
++    string bar_copy[ 1 ];
++    
+     {
+         string s[ 1 ];
+         int i;
+@@ -218,8 +226,6 @@
+     }
+ 
+     {
+-        char * const original = "  \n\t\v  Foo \r\n\v \tBar\n\n\r\r\t\n\v\t \t";
+-        string copy[ 1 ];
+         string_copy( copy, original );
+         assert( !strcmp( copy->value, original ) );
+         assert( copy->size == strlen( original ) );
+@@ -227,8 +233,6 @@
+     }
+ 
+     {
+-        char * const foo = "Foo    ";
+-        string foo_copy[ 1 ];
+         string_copy( foo_copy, foo );
+         string_rtrim( foo_copy );
+         assert( !strcmp( foo_copy->value, "Foo" ) );
+@@ -236,8 +240,6 @@
+         string_rtrim( foo_copy );
+         assert( !strcmp( foo_copy->value, "Foo" ) );
+ 
+-        char * const bar = "Bar\0\0\0";
+-        string bar_copy[ 1 ];
+         string_copy( bar_copy, bar );
+         string_rtrim( bar_copy );
+         assert( !strcmp( bar_copy->value, "Bar" ) );
+--- work/tools/build/src/engine/debugger.c.orig	2017-10-18 07:27:05.180752600 -0700
++++ work/tools/build/src/engine/debugger.c	2017-10-18 08:59:09.660000000 -0700
+@@ -822,6 +822,12 @@
+     }
+ }
+ 
++#if defined(_MSC_VER)
++  #if (_MSC_VER < 1700)
++    #define va_copy(dest, src) (dest = src)
++  #endif
++#endif
++
+ static const char * debug_format_message( const char * format, va_list vargs )
+ {
+     char * buf;
+@@ -1083,6 +1089,7 @@
+ static void debug_start_child( int argc, const char * * argv )
+ {
+ #if NT
++    int i;
+     char buf[ 80 ];
+     HANDLE pipe1[ 2 ];
+     HANDLE pipe2[ 2 ];
+@@ -1125,7 +1132,7 @@
+     sprintf( buf, "%p", pipe2[ 1 ] );
+     string_append( command_line, buf );
+     /* Pass the rest of the command line. */
+-    for ( int i = 1; i < argc; ++i )
++    for ( i = 1; i < argc; ++i )
+     {
+         string_push_back( command_line, ' ' );
+         string_append( command_line, argv[ i ] );
+@@ -1824,6 +1831,7 @@
+     const char * condition; /* FIXME: not supported yet */
+     const char * location;
+     int id;
++    char buf[ 80 ];
+     for ( --argc, ++argv; argc; --argc, ++argv )
+     {
+         if ( strcmp( *argv, "-t" ) == 0 )
+@@ -1921,7 +1929,6 @@
+ 
+     if ( disabled )
+     {
+-        char buf[ 80 ];
+         sprintf( buf, "%d", num_breakpoints );
+         inner_argv[ 0 ] = "disable";
+         inner_argv[ 1 ] = buf;
+@@ -1937,6 +1944,8 @@
+ 
+ static void debug_mi_break_delete( int argc, const char * * argv )
+ {
++    const char * inner_argv[ 2 ];
++    int id;
+     if ( argc < 2 )
+     {
+         debug_mi_error( "Not enough arguments for -break-delete" );
+@@ -1944,8 +1953,7 @@
+     }
+     for ( --argc, ++argv; argc; --argc, ++argv )
+     {
+-        const char * inner_argv[ 2 ];
+-        int id = breakpoint_id_parse( *argv );
++        id = breakpoint_id_parse( *argv );
+         if ( id == -1 )
+         {
+             debug_mi_error( "Not a valid breakpoint" );
+@@ -1981,6 +1989,8 @@
+ 
+ static void debug_mi_break_disable( int argc, const char * * argv )
+ {
++    const char * inner_argv[ 2 ];
++    int id;
+     if ( argc < 2 )
+     {
+         debug_mi_error( "Not enough arguments for -break-disable" );
+@@ -1988,8 +1998,7 @@
+     }
+     for ( --argc, ++argv; argc; --argc, ++argv )
+     {
+-        const char * inner_argv[ 2 ];
+-        int id = breakpoint_id_parse( *argv );
++        id = breakpoint_id_parse( *argv );
+         if ( id == -1 )
+         {
+             debug_mi_error( "Not a valid breakpoint" );
+@@ -2150,6 +2159,8 @@
+ 
+ static void debug_mi_thread_info( int argc, const char * * argv )
+ {
++    const char * new_args[] = { "info", "frame" };
++    FRAME_INFO info;
+     if ( debug_state == DEBUG_NO_CHILD )
+     {
+         debug_mi_format_token();
+@@ -2157,8 +2168,6 @@
+     }
+     else
+     {
+-        const char * new_args[] = { "info", "frame" };
+-        FRAME_INFO info;
+         debug_parent_forward_nowait( 2, new_args, 0, 0 );
+         debug_frame_read( command_child, &info );
+ 
+@@ -2172,6 +2181,8 @@
+ 
+ static void debug_mi_thread_select( int argc, const char * * argv )
+ {
++    const char * new_args[] = { "info", "frame" };
++    FRAME_INFO info;
+     if ( debug_state == DEBUG_NO_CHILD )
+     {
+         /* FIXME: better error handling*/
+@@ -2180,8 +2191,6 @@
+     }
+     else
+     {
+-        const char * new_args[] = { "info", "frame" };
+-        FRAME_INFO info;
+         debug_parent_forward_nowait( 2, new_args, 0, 0 );
+         debug_frame_read( command_child, &info );
+ 
+@@ -2195,6 +2204,9 @@
+ 
+ static void debug_mi_stack_select_frame( int argc, const char * * argv )
+ {
++    const char * new_args[ 2 ];
++    new_args[ 0 ] = "frame";
++    new_args[ 1 ] = argv[ 1 ];
+     if ( debug_state == DEBUG_NO_CHILD )
+     {
+         debug_mi_format_token();
+@@ -2202,9 +2214,6 @@
+     }
+     else
+     {
+-        const char * new_args[ 2 ];
+-        new_args[ 0 ] = "frame";
+-        new_args[ 1 ] = argv[ 1 ];
+         debug_parent_forward_nowait( 2, new_args, 0, 0 );
+         debug_mi_format_token();
+         printf( "^done\n(gdb) \n" );
+@@ -2213,6 +2222,7 @@
+ 
+ static void debug_mi_stack_info_frame( int argc, const char * * argv )
+ {
++    FRAME_INFO info;
+     if ( debug_state == DEBUG_NO_CHILD )
+     {
+         debug_mi_format_token();
+@@ -2220,7 +2230,6 @@
+     }
+     else
+     {
+-        FRAME_INFO info;
+         fprintf( command_output, "info frame\n" );
+         fflush( command_output );
+         debug_frame_read( command_child, &info );
+@@ -2235,6 +2244,12 @@
+ static void debug_mi_stack_list_variables( int argc, const char * * argv )
+ {
+     int print_values = 0;
++    LIST * vars;
++    LISTITER iter, end;
++    int first = 1;
++    OBJECT * varname = list_item( iter );
++    string varbuf[1];
++    const char * new_args[2];
+ #define DEBUG_PRINT_VARIABLES_NO_VALUES     1
+ #define DEBUG_PRINT_VARIABLES_ALL_VALUES    2
+ #define DEBUG_PRINT_VARIABLES_SIMPLE_VALUES 3
+@@ -2291,9 +2306,6 @@
+     }
+     
+     {
+-        LIST * vars;
+-        LISTITER iter, end;
+-        int first = 1;
+         fprintf( command_output, "info locals\n" );
+         fflush( command_output );
+         vars = debug_list_read( command_child );
+@@ -2302,9 +2314,6 @@
+         printf( "^done,variables=[" );
+         for ( iter = list_begin( vars ), end = list_end( vars ); iter != end; iter = list_next( iter ) )
+         {
+-            OBJECT * varname = list_item( iter );
+-            string varbuf[1];
+-            const char * new_args[2];
+             if ( first )
+             {
+                 first = 0;
+@@ -2334,6 +2343,12 @@
+ static void debug_mi_stack_list_locals( int argc, const char * * argv )
+ {
+     int print_values = 0;
++    LIST * vars;
++    LISTITER iter, end;
++    int first = 1;
++    OBJECT * varname = list_item( iter );
++    string varbuf[1];
++    const char * new_args[2];
+ #define DEBUG_PRINT_VARIABLES_NO_VALUES     1
+ #define DEBUG_PRINT_VARIABLES_ALL_VALUES    2
+ #define DEBUG_PRINT_VARIABLES_SIMPLE_VALUES 3
+@@ -2396,9 +2411,6 @@
+     }
+     
+     {
+-        LIST * vars;
+-        LISTITER iter, end;
+-        int first = 1;
+         fprintf( command_output, "info locals\n" );
+         fflush( command_output );
+         vars = debug_list_read( command_child );
+@@ -2407,9 +2419,6 @@
+         printf( "^done,locals=[" );
+         for ( iter = list_begin( vars ), end = list_end( vars ); iter != end; iter = list_next( iter ) )
+         {
+-            OBJECT * varname = list_item( iter );
+-            string varbuf[1];
+-            const char * new_args[2];
+             if ( first )
+             {
+                 first = 0;
+@@ -2441,6 +2450,7 @@
+     const char * new_args[ 3 ];
+     int depth;
+     int i;
++    FRAME_INFO frame;
+     
+     if ( debug_state == DEBUG_NO_CHILD )
+     {
+@@ -2460,7 +2470,6 @@
+     printf( "^done,stack=[" );
+     for ( i = 0; i < depth; ++i )
+     {
+-        FRAME_INFO frame;
+         fprintf( command_output, "info frame %d\n", i );
+         fflush( command_output );
+         if ( i != 0 )
+@@ -2493,13 +2502,13 @@
+ 
+ static void debug_mi_exec_continue( int argc, const char * * argv )
+ {
++    const char * new_args[] = { "continue" };
+     if ( debug_state == DEBUG_NO_CHILD )
+     {
+         printf( "^error,msg=\"No child\"\n(gdb) \n" );
+     }
+     else
+     {
+-        const char * new_args[] = { "continue" };
+         debug_mi_format_token();
+         printf( "^running\n(gdb) \n" );
+         fflush( stdout );
+@@ -2509,13 +2518,13 @@
+ 
+ static void debug_mi_exec_step( int argc, const char * * argv )
+ {
++    const char * new_args[] = { "step" };
+     if ( debug_state == DEBUG_NO_CHILD )
+     {
+         printf( "^error,msg=\"No child\"\n(gdb) \n" );
+     }
+     else
+     {
+-        const char * new_args[] = { "step" };
+         debug_mi_format_token();
+         printf( "^running\n(gdb) \n" );
+         fflush( stdout );
+@@ -2525,13 +2534,13 @@
+ 
+ static void debug_mi_exec_next( int argc, const char * * argv )
+ {
++    const char * new_args[] = { "next" };
+     if ( debug_state == DEBUG_NO_CHILD )
+     {
+         printf( "^error,msg=\"No child\"\n(gdb) \n" );
+     }
+     else
+     {
+-        const char * new_args[] = { "next" };
+         debug_mi_format_token();
+         printf( "^running\n(gdb) \n" );
+         fflush( stdout );
+@@ -2541,13 +2550,13 @@
+ 
+ static void debug_mi_exec_finish( int argc, const char * * argv )
+ {
++    const char * new_args[] = { "finish" };
+     if ( debug_state == DEBUG_NO_CHILD )
+     {
+         printf( "^error,msg=\"No child\"\n(gdb) \n" );
+     }
+     else
+     {
+-        const char * new_args[] = { "finish" };
+         debug_mi_format_token();
+         printf( "^running\n(gdb) \n" );
+         fflush( stdout );
+@@ -2563,6 +2572,7 @@
+ 
+ static void debug_mi_data_evaluate_expression( int argc, const char * * argv )
+ {
++    const char * new_args[ 2 ];
+     if ( argc < 2 )
+     {
+         printf( "^error,msg=\"Not enough arguments for -data-evaluate-expression\"\n(gdb) \n" );
+@@ -2573,7 +2583,6 @@
+     }
+     else
+     {
+-        const char * new_args[ 2 ];
+         debug_mi_format_token();
+         printf( "^done,value=\"" );
+         fflush( stdout );
