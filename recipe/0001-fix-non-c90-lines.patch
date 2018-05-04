@@ -1,56 +1,3 @@
---- work/tools/build/src/engine/strings.c.orig	2017-10-18 07:19:07.979454800 -0700
-+++ work/tools/build/src/engine/strings.c	2017-10-18 07:18:35.509013400 -0700
-@@ -191,14 +191,22 @@
- 
- void string_rtrim( string * self )
- {
-+    char * p;
-     assert_invariants( self );
--    char * p = self->value + self->size - 1;
-+    p = self->value + self->size - 1;
-     for ( p; p >= self->value && ( *p == '\0' || isspace( *p ) ); *p-- = 0 );
- }
- 
- #ifndef NDEBUG
- void string_unit_test()
- {
-+    char * const original = "  \n\t\v  Foo \r\n\v \tBar\n\n\r\r\t\n\v\t \t";
-+    char * const foo = "Foo    ";
-+    char * const bar = "Bar\0\0\0";
-+    string copy[ 1 ];
-+    string foo_copy[ 1 ];
-+    string bar_copy[ 1 ];
-+    
-     {
-         string s[ 1 ];
-         int i;
-@@ -218,8 +226,6 @@
-     }
- 
-     {
--        char * const original = "  \n\t\v  Foo \r\n\v \tBar\n\n\r\r\t\n\v\t \t";
--        string copy[ 1 ];
-         string_copy( copy, original );
-         assert( !strcmp( copy->value, original ) );
-         assert( copy->size == strlen( original ) );
-@@ -227,8 +233,6 @@
-     }
- 
-     {
--        char * const foo = "Foo    ";
--        string foo_copy[ 1 ];
-         string_copy( foo_copy, foo );
-         string_rtrim( foo_copy );
-         assert( !strcmp( foo_copy->value, "Foo" ) );
-@@ -236,8 +240,6 @@
-         string_rtrim( foo_copy );
-         assert( !strcmp( foo_copy->value, "Foo" ) );
- 
--        char * const bar = "Bar\0\0\0";
--        string bar_copy[ 1 ];
-         string_copy( bar_copy, bar );
-         string_rtrim( bar_copy );
-         assert( !strcmp( bar_copy->value, "Bar" ) );
 --- work/tools/build/src/engine/debugger.c.orig	2017-10-18 07:27:05.180752600 -0700
 +++ work/tools/build/src/engine/debugger.c	2017-10-18 08:59:09.660000000 -0700
 @@ -822,6 +822,12 @@
@@ -66,23 +13,6 @@
  static const char * debug_format_message( const char * format, va_list vargs )
  {
      char * buf;
-@@ -1083,6 +1089,7 @@
- static void debug_start_child( int argc, const char * * argv )
- {
- #if NT
-+    int i;
-     char buf[ 80 ];
-     HANDLE pipe1[ 2 ];
-     HANDLE pipe2[ 2 ];
-@@ -1125,7 +1132,7 @@
-     sprintf( buf, "%p", pipe2[ 1 ] );
-     string_append( command_line, buf );
-     /* Pass the rest of the command line. */
--    for ( int i = 1; i < argc; ++i )
-+    for ( i = 1; i < argc; ++i )
-     {
-         string_push_back( command_line, ' ' );
-         string_append( command_line, argv[ i ] );
 @@ -1824,6 +1831,7 @@
      const char * condition; /* FIXME: not supported yet */
      const char * location;
