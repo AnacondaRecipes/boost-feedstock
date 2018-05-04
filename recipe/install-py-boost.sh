@@ -28,11 +28,11 @@ source ${BUILD_PREFIX}/bin/activate "${PREFIX}"
 if [[ ${PY_VER%.*} == 3 ]]; then
   pushd "${PREFIX}/lib"
     if [[ ${HOST} =~ .*darwin.* ]]; then
-      ln -s libboost_python${PY_VER%.*}.dylib libboost_python.dylib
-      ln -s libboost_numpy${PY_VER%.*}.dylib libboost_numpy.dylib
+      ln -s libboost_python${PY_VER//./}.dylib libboost_python.dylib
+      ln -s libboost_numpy${PY_VER//./}.dylib libboost_numpy.dylib
     else
-      ln -s libboost_python${PY_VER%.*}.so libboost_python.so
-      ln -s libboost_numpy${PY_VER%.*}.so libboost_numpy.so
+      ln -s libboost_python${PY_VER//./}.so libboost_python.so
+      ln -s libboost_numpy${PY_VER//./}.so libboost_numpy.so
     fi
   popd
 fi
