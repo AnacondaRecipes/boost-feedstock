@@ -29,7 +29,7 @@ requirements:
   host:
     - icu               # [unix]
     - bzip2             # [unix]
-    - xz                # [unix or vc>=14]
+    - xz
     - zlib
 
 outputs:

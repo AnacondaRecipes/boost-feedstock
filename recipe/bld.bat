@@ -46,6 +46,6 @@ rmdir /s /q %LIBRARY_INC%\boost\python
 echo &echo.                           >> %LIBRARY_INC%\boost\config\user.hpp
 echo #define BOOST_AUTO_LINK_NOMANGLE >> %LIBRARY_INC%\boost\config\user.hpp
 
-:: Move dll's to LIBRARY_BIN
+:: Move DLLs to LIBRARY_BIN
 move %LIBRARY_LIB%\*vc%VS_MAJOR%0-mt-%MAJ_MIN_VER%.dll "%LIBRARY_BIN%"
 if errorlevel 1 exit /b 1
