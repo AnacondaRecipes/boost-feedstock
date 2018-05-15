@@ -2,9 +2,6 @@
 
 set -x -e
 
-# activate the build environment
-. activate "${BUILD_PREFIX}"
-
 if [[ ${HOST} =~ .*darwin.* ]]; then
     TOOLSET=clang
 elif [[ ${HOST} =~ .*linux.* ]]; then

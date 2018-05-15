@@ -2,16 +2,6 @@
 
 set -x -e
 
-# activate the build environment
-. activate "${BUILD_PREFIX}"
-
-# "stack" the host environment on top of the build env
-mkdir -p "${PREFIX}/conda-meta"
-touch "${PREFIX}/conda-meta/history"
-unset CONDA_PATH_BACKUP
-export CONDA_MAX_SHLVL=2
-source ${BUILD_PREFIX}/bin/activate "${PREFIX}"
-
 # remove any old builds of the python target
 ./b2 -q -d+2 --with-python --clean
 

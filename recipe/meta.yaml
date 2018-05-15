@@ -34,6 +34,8 @@ requirements:
 
 outputs:
   - name: libboost
+    build:
+      activate_in_script: True
     script: install-libboost.sh   # [unix]
     script: install-libboost.bat  # [win]
     requirements:
@@ -111,6 +113,8 @@ outputs:
   - name: py-boost
     script: install-py-boost.sh   # [unix]
     script: install-py-boost.bat  # [win]
+    build:
+      activate_in_script: True
     requirements:
       build:
         - {{ compiler('c') }}
