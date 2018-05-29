@@ -183,6 +183,7 @@ outputs:
         - {{ pin_subpackage('libboost', exact=True) }}
         - {{ pin_subpackage('py-boost', exact=True) }}
         - python
+        - icu
 
 about:
   home: http://www.boost.org/
@@ -199,3 +200,4 @@ extra:
     - mingwandroid
     - msarahan
     - ocefpaf
+    - marcelotrevisani
