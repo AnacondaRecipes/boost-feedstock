@@ -1,4 +1,4 @@
-{% set version = "1.73.0" %}
+{% set version = "1.74.0" %}
 {% set win_vstr = version.replace('.', '_') %}
 {% set win_vstr_mm = "_".join(version.split(".")[:2]) %}
 {% set win_astr = "x32" if win32 else "x64" %}
@@ -17,24 +17,21 @@ source:
   git_ref: boost-{{ version }}
 {% else %}
   url: https://boostorg.jfrog.io/artifactory/main/release/{{ version }}/source/boost_{{ version.replace(".", "_") }}.tar.bz2
-  sha256: 4eb3b8d442b426dc35346235c8733b5ae35ba431690e38c6a8263dce9fcbb402
+  sha256: 83bfc1507731a0906e387fc28b7ef5417d591429e51e788417fe9ff025e116b1
 {% endif %}
   patches:
     - 0001-CONDA_BUILD-customization.patch
     - 0002-boost.python-fix-python-lib-config-abiflags.patch
     - 0003-boost.python-fix-unix-library-paths-and-darwin-sysroot.patch
-{% if from_source_control != 'yes' %}
-    # From: https://trac.macports.org/ticket/60287
-    # .. it was hoped this patch would make it into 1.73 but it did not.
-    - 0004-patch-clang_version.patch
-{% endif %}
     - 0005-boost.python-add-Library-include-and-lib-on-Win.patch
     # Fixes compilation with Python 3.10, see also 
     # https://bugzilla.redhat.com/show_bug.cgi?id=1912903
     - 0006-boost.python-py-fopen-private.patch
+    # https://github.com/boostorg/build/pull/642
+    - 0007-osx-arm64.patch
 
 build:
-  number: 12
+  number: 0
   # script_env:
   #   - CONDA_BUILD_DEBUG_BUILD_SYSTEM={{ debug_build_system }}
 
@@ -90,24 +87,26 @@ outputs:
       files:
         - tests
       commands:
-        # Verify b2 and bjam executables work
-        - b2 --help
-        - bjam --help
-        - pushd tests
-        -   pushd hello_world_cxx
-        -     ./test.sh  # [not win and not (aarch64 or s390x)]
-        -     test.bat  # [win]
-        -   popd
-        - popd
+        # Due to a bug introduced in 1.74.0 the following no longer work and so
+        # had to be removed; see https://github.com/boostorg/build/issues/677.
+        # - b2 --help
+        # - bjam --help
+        # - pushd tests
+        # -   pushd hello_world_cxx
+        # -     ./test.sh  # [not win and not (aarch64 or s390x)]
+        # -     test.bat  # [win]
+        # -   popd
+        # - popd
+
         # Verify Python headers are removed.
         - "! test -f $PREFIX/include/boost/python.hpp"                      # [unix]
         - "! test -d $PREFIX/include/boost/python"                          # [unix]
-        - if exist %PREFIX%\Library\include\boost\boost\python.hpp exit 1     # [win]
-        - if exist %PREFIX%\Library\include\boost\python exit 1         # [win]
+        - if exist %PREFIX%\Library\include\boost\boost\python.hpp exit 1   # [win]
+        - if exist %PREFIX%\Library\include\boost\python exit 1             # [win]
 
         # Verify a header exists.
         - test -f $PREFIX/include/boost/assert.hpp  # [unix]
-        - if not exist %PREFIX%\Library\include\boost\assert.hpp exit 1  # [win]
+        - if not exist %PREFIX%\Library\include\boost\assert.hpp exit 1     # [win]
 
         # Verify static-only libraries.
         - test -f $PREFIX/lib/libboost_exception.a                          # [unix]
@@ -181,18 +180,11 @@ outputs:
         - python
     test:
       source_files: libs/python/example/*
-      files: tests
       requires:
         - {{ compiler('c') }}
         - {{ compiler('cxx') }}
         - numpy
       commands:
-        - pushd tests
-        -   pushd hello_world_py
-        -     ./test.sh  # [not win]
-        -     echo "Skipped hello_world_py\test.bat as bjam with boost python is broken on Windows"  # [win]
-        -   popd
-        - popd
         # verify Python headers
         - test -f $PREFIX/include/boost/python.hpp                # [unix]
         - test -d $PREFIX/include/boost/python                    # [unix]
