@@ -20,15 +20,6 @@
  {
      exec-prefix ?= $(prefix) ;
  
-@@ -544,7 +548,7 @@
-     }
-     else
-     {
--        includes ?= $(prefix)/include/python$(version) ;
-+        includes ?= $(prefix)/include/python$(version)$(abiflags) $(exec-prefix)/include ;
- 
-         local lib = $(exec-prefix)/lib ;
-         libraries ?= $(lib)/python$(version)/config $(lib) ;
 @@ -789,7 +793,7 @@
                      exec-prefix = $(sys.exec_prefix) ;
  
