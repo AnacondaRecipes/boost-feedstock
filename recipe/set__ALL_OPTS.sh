@@ -5,13 +5,32 @@ INCLUDE_PATH="${PREFIX}/include"
 LIBRARY_PATH="${PREFIX}/lib"
 
 LINKFLAGS="${LINKFLAGS} -L${LIBRARY_PATH}"
+if [[ ${target_platform} =~ osx.* ]]; then
+  export CXXFLAGS="${CXXFLAGS} -std=c++14 -stdlib=libc++"
+  export LINKFLAGS="${LINKFLAGS} -std=c++14"
+fi
 declare -a _GENERIC_OPTS=()
 if [[ ${CONDA_BUILD_DEBUG_BUILD_SYSTEM} == yes ]]; then
   _GENERIC_OPTS+=(-q -d+2)
 fi
 _GENERIC_OPTS+=(variant=release)
-_GENERIC_OPTS+=(address-model="${ARCH}")
-_GENERIC_OPTS+=(architecture=x86)
+if [[ ${ARCH} == ppc64le ]]; then
+  _GENERIC_OPTS+=(address-model="64")
+  _GENERIC_OPTS+=(architecture=power)
+elif [[ ${ARCH} == aarch64 ]]; then
+  _GENERIC_OPTS+=(address-model="64")
+  _GENERIC_OPTS+=(architecture=arm)
+elif [[ ${ARCH} == s390x ]]; then
+  _GENERIC_OPTS+=(address-model="64")
+  _GENERIC_OPTS+=(architecture=s390x)
+# This is osx-arm64
+elif [[ ${ARCH} == arm64 ]]; then
+  _GENERIC_OPTS+=(address-model="64")
+  _GENERIC_OPTS+=(architecture=arm)
+else
+  _GENERIC_OPTS+=(address-model="${ARCH}")
+  _GENERIC_OPTS+=(architecture=x86)
+fi
 _GENERIC_OPTS+=(debug-symbols=off)
 # TODO :: Put the single threaded libraries into a separate library if we want this:
 #         Some research (as of 1.71.0):
@@ -38,26 +57,26 @@ _GENERIC_OPTS+=(--keep-going=false)
 _GENERIC_OPTS+=(-j${CPU_COUNT})
 
 declare -a _TP_OPTS=()
-if [[ ${target_platform} == osx-64 ]]; then
+if [[ ${target_platform} =~ osx.* ]]; then
   _TP_OPTS+=(target-os=darwin)
-  _TP_OPTS+=(binary-format=mach-o)
-  _TP_OPTS+=(abi=sysv)
+  # _TP_OPTS+=(binary-format=mach-o)
+  # _TP_OPTS+=(abi=sysv)
   _TP_OPTS+=(threading=multi)
 fi
 
-if [[ ${target_platform} == osx-64 ]]; then
+if [[ ${target_platform} =~ osx.* ]]; then
   # See this comment in tools/build/src/tools/darwin.jam
   # "# - The archive builder (libtool is the default as creating
   #  #   archives in darwin is complicated."
-  ARCHIVER=${LIBTOOL}
-  # Maybe clang?
-  TOOLSET_REAL=darwin
+  ARCHIVER=${AR}
+  # Maybe clang? Or clang-darwin100?
+  TOOLSET=clang
   TOOLSET_VERSION=10.0.0
 else
-  TOOLSET_REAL=gcc
+  TOOLSET=gcc
   TOOLSET_VERSION=7.3.0
   ARCHIVER=${AR}
 fi
-_TP_OPTS+=(toolset=${TOOLSET_REAL})
+_TP_OPTS+=(toolset=${TOOLSET})
 
 declare -a _ALL_OPTS=("${_GENERIC_OPTS[@]}" "${_TP_OPTS[@]}")

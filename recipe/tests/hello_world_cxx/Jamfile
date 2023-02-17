@@ -1,0 +1,4 @@
+exe hello : hello.cpp ;
+
+install dist : hello : <location>. ;
+
