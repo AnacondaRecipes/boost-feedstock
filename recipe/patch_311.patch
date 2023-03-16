@@ -1,0 +1,17 @@
+Index: boost_1_73_0/boost/python/object/make_instance.hpp
+===================================================================
+--- boost_1_73_0.orig/boost/python/object/make_instance.hpp
++++ boost_1_73_0/boost/python/object/make_instance.hpp
+@@ -47,8 +47,11 @@ struct make_instance_impl
+               
+             // Note the position of the internally-stored Holder,
+             // for the sake of destruction
++#if PY_VERSION_HEX < 0x030c0000
++            Py_SET_SIZE(instance, offsetof(instance_t, storage));
++#else
+             Py_SIZE(instance) = offsetof(instance_t, storage);
+-
++#endif
+             // Release ownership of the python object
+             protect.cancel();
+         }

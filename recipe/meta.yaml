@@ -32,6 +32,7 @@ source:
     # Fixes compilation with Python 3.10, see also 
     # https://bugzilla.redhat.com/show_bug.cgi?id=1912903
     - 0006-boost.python-py-fopen-private.patch
+    - patch_311.patch
 
 build:
   number: 13
