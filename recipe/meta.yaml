@@ -1,4 +1,4 @@
-{% set version = "1.73.0" %}
+{% set version = "1.82.0" %}
 {% set win_vstr = version.replace('.', '_') %}
 {% set win_vstr_mm = "_".join(version.split(".")[:2]) %}
 {% set win_astr = "x32" if win32 else "x64" %}
@@ -17,24 +17,17 @@ source:
   git_ref: boost-{{ version }}
 {% else %}
   url: https://boostorg.jfrog.io/artifactory/main/release/{{ version }}/source/boost_{{ version.replace(".", "_") }}.tar.bz2
-  sha256: 4eb3b8d442b426dc35346235c8733b5ae35ba431690e38c6a8263dce9fcbb402
+  sha256: a6e1ab9b0860e6a2881dd7b21fe9f737a095e5f33a3a874afc6a345228597ee6
 {% endif %}
   patches:
     - 0001-CONDA_BUILD-customization.patch
     - 0002-boost.python-fix-python-lib-config-abiflags.patch
     - 0003-boost.python-fix-unix-library-paths-and-darwin-sysroot.patch
-{% if from_source_control != 'yes' %}
-    # From: https://trac.macports.org/ticket/60287
-    # .. it was hoped this patch would make it into 1.73 but it did not.
-    - 0004-patch-clang_version.patch
-{% endif %}
     - 0005-boost.python-add-Library-include-and-lib-on-Win.patch
-    # Fixes compilation with Python 3.10, see also 
-    # https://bugzilla.redhat.com/show_bug.cgi?id=1912903
-    - 0006-boost.python-py-fopen-private.patch
+    - 0006-pass-CXX-CXXFLAGS-as-params-to-engine-build.sh.patch
 
 build:
-  number: 12
+  number: 0
   # script_env:
   #   - CONDA_BUILD_DEBUG_BUILD_SYSTEM={{ debug_build_system }}
 

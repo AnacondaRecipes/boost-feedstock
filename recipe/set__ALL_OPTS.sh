@@ -71,10 +71,10 @@ if [[ ${target_platform} =~ osx.* ]]; then
   ARCHIVER=${AR}
   # Maybe clang? Or clang-darwin100?
   TOOLSET=clang
-  TOOLSET_VERSION=10.0.0
+  #TOOLSET_VERSION=10.0.0
 else
   TOOLSET=gcc
-  TOOLSET_VERSION=7.3.0
+  #TOOLSET_VERSION=7.3.0
   ARCHIVER=${AR}
 fi
 _TP_OPTS+=(toolset=${TOOLSET})
