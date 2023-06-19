@@ -11,7 +11,7 @@ source:
   sha256: a6e1ab9b0860e6a2881dd7b21fe9f737a095e5f33a3a874afc6a345228597ee6
   patches:
     - 0001-CONDA_BUILD-customization.patch
-    - 0002-boost.python-fix-python-lib-config-abiflags.patch
+#    - 0002-boost.python-fix-python-lib-config-abiflags.patch
     - 0003-boost.python-fix-unix-library-paths-and-darwin-sysroot.patch
     - 0005-boost.python-add-Library-include-and-lib-on-Win.patch
     - 0006-pass-CXX-CXXFLAGS-as-params-to-engine-build.sh.patch
@@ -119,8 +119,6 @@ outputs:
         {% endfor %}
 
   - name: py-boost
-    build:
-      activate_in_script: True
     script: install-py-boost.sh   # [unix]
     script: install-py-boost.bat   # [win]
 
