@@ -1,61 +1,83 @@
 #!/bin/bash
 
+# Hints:
+# http://boost.2283326.n4.nabble.com/how-to-build-boost-with-bzip2-in-non-standard-location-td2661155.html
+# http://www.gentoo.org/proj/en/base/amd64/howtos/?part=1&chap=3
+# http://www.boost.org/doc/libs/1_55_0/doc/html/bbv2/reference.html
+
+# Hints for OSX:
+# http://stackoverflow.com/questions/20108407/how-do-i-compile-boost-for-os-x-64b-platforms-with-stdlibc
+
 set -x -e
-set -o pipefail
 
-. ${RECIPE_DIR}/set__ALL_OPTS.sh
+INCLUDE_PATH="${PREFIX}/include"
+LIBRARY_PATH="${PREFIX}/lib"
 
-./b2  \
-     install | tee b2.install-libboost.log 2>&1
+# Always build PIC code for enable static linking into other shared libraries
+CXXFLAGS="${CXXFLAGS} -fPIC"
 
-# Remove Python headers as we don't build Boost.Python.
-if [[ -f "${PREFIX}/include/boost/python.hpp" ]]; then
-  echo "Warning :: ${PREFIX}/include/boost/python.hpp exists when installing libboost, it should not"
-  rm -f "${PREFIX}/include/boost/python.hpp"
-  [[ -f "${PREFIX}/include/boost/python.hpp" ]] && rm -rf "${PREFIX}/include/boost/python"
+if [[ "${target_platform}" == osx* ]]; then
+    TOOLSET=clang
+elif [[ "${target_platform}" == linux* ]]; then
+    TOOLSET=gcc
 fi
 
-mkdir -p ${PREFIX}/bin
-cp ./b2 "${PREFIX}/bin/b2" || exit 1
-pushd "${PREFIX}/bin"
-    cp -a b2 bjam || exit 1
-popd
+# http://www.boost.org/build/doc/html/bbv2/tasks/crosscompile.html
+cat <<EOF > ${SRC_DIR}/tools/build/src/site-config.jam
+using ${TOOLSET} : : ${CXX} ;
+EOF
 
-pushd tools/build/src
-  for _dir in build kernel options tools util; do
-    mkdir -p "${PREFIX}/share/boost-build/src/${_dir}"
-    cp -rf ${_dir}/* "${PREFIX}/share/boost-build/src/${_dir}/"
-  done
-  cp -f build-system.jam "${PREFIX}/share/boost-build/src/"
-popd
-# pushd tools/build
-#   ./bootstrap.sh --with-toolset=${TOOLSET_REAL}
-  # We run bjam here so that b2 is not an open file, otherwise:
-  #   common.copy $PREFIX/bin/b2
-  #   cp: cannot create regular file '$PREFIX/bin/b2': Text file busy
-#   bjam install \
-#     --prefix=${PREFIX} \
-#     toolset=${TOOLSET_REAL}
-#   cp ${PREFIX}/bin/b2 ${PREFIX}/bin/bjam
-# popd
+LINKFLAGS="${LINKFLAGS} -L${LIBRARY_PATH}"
 
-# We have patched build-system.jam to use this file when
-# the CONDA_PREFIX environment variable is set.
-# mkdir -p "${PREFIX}/etc"
-# cp ${SRC_DIR}/tools/build/src/site-config.jam "${PREFIX}/etc"
+CXXFLAGS="$(echo ${CXXFLAGS} | sed 's/ -march=[^ ]*//g' | sed 's/ -mcpu=[^ ]*//g' |sed 's/ -mtune=[^ ]*//g')" \
+CFLAGS="$(echo ${CFLAGS} | sed 's/ -march=[^ ]*//g' | sed 's/ -mcpu=[^ ]*//g' |sed 's/ -mtune=[^ ]*//g')" \
+    CXX=${CXX_FOR_BUILD:-${CXX}} CC=${CC_FOR_BUILD:-${CC}} ./bootstrap.sh \
+    --prefix="${PREFIX}" \
+    --without-libraries=python \
+    --with-toolset=${TOOLSET} \
+    --with-icu="${PREFIX}" || (cat bootstrap.log; exit 1)
 
-pushd tools/build
-  ./bootstrap.sh \
-    --with-toolset=${TOOLSET}
-  # We need to delete this otherwise install will fail to overwrite due to it being open
-  # (though why would it be open?!)
-  rm -rf ${PREFIX}/bin/b2
-  ls -l ${PREFIX}/bin/bjam
-  ${PREFIX}/bin/bjam \
-    "${_ALL_OPTS[@]}" \
-    install 2>&1 | tee b2.build-final-bjam.log
-  cp ${PREFIX}/bin/b2 ${PREFIX}/bin/bjam
-popd
+ADDRESS_MODEL="${ARCH}"
+ARCHITECTURE=x86
+ABI="sysv"
 
-mkdir -p $PREFIX/share/boost-build/src/kernel/ || true
-cp tools/build/src/site-config.jam ${PREFIX}/share/boost-build/src/kernel/
+if [ "${ADDRESS_MODEL}" == "aarch64" ] || [ "${ADDRESS_MODEL}" == "arm64" ]; then
+    ADDRESS_MODEL=64
+    ARCHITECTURE=arm
+    ABI="aapcs"
+elif [ "${ADDRESS_MODEL}" == "ppc64le" ]; then
+    ADDRESS_MODEL=64
+    ARCHITECTURE=power
+fi
+
+if [[ "$target_platform" == osx-* ]]; then
+    BINARY_FORMAT="mach-o"
+elif [[ "$target_platform" == linux-* ]]; then
+    BINARY_FORMAT="elf"
+fi
+
+echo "1**************************************************************************"
+echo "SHELL $SHELL"
+echo "1**************************************************************************"
+
+./b2 -q \
+    variant=release \
+    address-model="${ADDRESS_MODEL}" \
+    architecture="${ARCHITECTURE}" \
+    binary-format="${BINARY_FORMAT}" \
+    abi="${ABI}" \
+    debug-symbols=off \
+    threading=multi \
+    runtime-link=shared \
+    link=shared \
+    toolset=${TOOLSET} \
+    include="${INCLUDE_PATH}" \
+    cxxflags="${CXXFLAGS}" \
+    linkflags="${LINKFLAGS}" \
+    --layout=system \
+    -j"${CPU_COUNT}" \
+    install
+
+# Remove Python headers as we don't build Boost.Python.
+rm "${PREFIX}/include/boost/python.hpp"
+rm -r "${PREFIX}/include/boost/python"

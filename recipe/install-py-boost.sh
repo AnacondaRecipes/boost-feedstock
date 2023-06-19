@@ -1,34 +1,86 @@
 #!/bin/bash
 
+# Hints:
+# http://boost.2283326.n4.nabble.com/how-to-build-boost-with-bzip2-in-non-standard-location-td2661155.html
+# http://www.gentoo.org/proj/en/base/amd64/howtos/?part=1&chap=3
+# http://www.boost.org/doc/libs/1_55_0/doc/html/bbv2/reference.html
+
+# Hints for OSX:
+# http://stackoverflow.com/questions/20108407/how-do-i-compile-boost-for-os-x-64b-platforms-with-stdlibc
+
 set -x -e
+set -o pipefail
 
-# remove any old builds of the python target
-./b2 -q -d+2 --with-python --clean
 
-for PY_VER2 in 3.6 3.7 3.8; do
-    ./b2 -q -d+2 \
-        --with-python \
-        python=${PY_VER} \
-        --reconfigure \
-        -j${CPU_COUNT} \
-        cxxflags="${CXXFLAGS} -Wno-deprecated-declarations" \
-        clean 2>&1 | tee py-boost-%PY_VER%-clean.log
-done
+INCLUDE_PATH="${PREFIX}/include"
+LIBRARY_PATH="${PREFIX}/lib"
 
-./b2 -q -d+2 \
-     --with-python \
-     python=${PY_VER} \
-    --reconfigure \
-     -j${CPU_COUNT} \
-     cxxflags="${CXXFLAGS} -Wno-deprecated-declarations" \
-     install 2>&1 | tee py-boost-%PY_VER%-install.log
+# Always build PIC code for enable static linking into other shared libraries
+CXXFLAGS="${CXXFLAGS} -fPIC"
+# Ensure we always find the correct Python headers (needed for PyPy builds)
+CXXFLAGS="${CXXFLAGS} -isystem $(python -c 'import sysconfig; print(sysconfig.get_config_var("INCLUDEPY"))')"
 
-# boost.python, when driven via bjam always links to boost_python
-# instead of boost_python3. It also does not add any specified
-# --python-buildid; ping @stefanseefeld
-pushd "${PREFIX}/lib"
-  [[ -f libboost_python.a ]] || ln -s libboost_python${PY_VER//./}.a libboost_python.a
-  [[ -f libboost_numpy.a ]] || ln -s libboost_numpy${PY_VER//./}.a libboost_numpy.a
-  ln -s libboost_python${PY_VER//./}${SHLIB_EXT} libboost_python${SHLIB_EXT}
-  ln -s libboost_numpy${PY_VER//./}${SHLIB_EXT} libboost_numpy${SHLIB_EXT}
-popd
+if [[ "${target_platform}" == osx* ]]; then
+    TOOLSET=clang
+elif [[ "${target_platform}" == linux* ]]; then
+    TOOLSET=gcc
+fi
+
+# http://www.boost.org/build/doc/html/bbv2/tasks/crosscompile.html
+cat <<EOF > ${SRC_DIR}/tools/build/src/site-config.jam
+using ${TOOLSET} : : ${CXX} ;
+EOF
+
+LINKFLAGS="${LINKFLAGS} -L${LIBRARY_PATH}"
+
+CXX=${CXX_FOR_BUILD:-${CXX}} CC=${CC_FOR_BUILD:-${CC}} ./bootstrap.sh \
+    --prefix="${PREFIX}" \
+    --with-toolset=${TOOLSET} \
+    --with-icu="${PREFIX}" \
+    --with-python="${PYTHON}" \
+    --with-python-root="${PREFIX} : ${PREFIX}/include/python${PY_VER}m : ${PREFIX}/include/python${PY_VER}" \
+    2>&1
+
+ADDRESS_MODEL="${ARCH}"
+ARCHITECTURE=x86
+ABI="sysv"
+
+if [ "${ADDRESS_MODEL}" == "aarch64" ] || [ "${ADDRESS_MODEL}" == "arm64" ]; then
+    ADDRESS_MODEL=64
+    ARCHITECTURE=arm
+    ABI="aapcs"
+elif [ "${ADDRESS_MODEL}" == "ppc64le" ]; then
+    ADDRESS_MODEL=64
+    ARCHITECTURE=power
+fi
+
+if [[ "$target_platform" == osx-* ]]; then
+    BINARY_FORMAT="mach-o"
+elif [[ "$target_platform" == linux-* ]]; then
+    BINARY_FORMAT="elf"
+fi
+
+echo "2**************************************************************************"
+echo "SHELL $SHELL"
+echo "2**************************************************************************"
+
+
+./b2 -q \
+    variant=release \
+    address-model="${ADDRESS_MODEL}" \
+    architecture="${ARCHITECTURE}" \
+    binary-format="${BINARY_FORMAT}" \
+    abi="${ABI}" \
+    debug-symbols=off \
+    threading=multi \
+    runtime-link=shared \
+    link=static,shared \
+    toolset=${TOOLSET} \
+    python="${PY_VER}" \
+    include="${INCLUDE_PATH}" \
+    cxxflags="${CXXFLAGS}" \
+    linkflags="${LINKFLAGS}" \
+    --layout=system \
+    --with-python \
+    -j"${CPU_COUNT}" \
+    install 2>&1 | tee b2.log
