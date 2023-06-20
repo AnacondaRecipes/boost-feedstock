@@ -8,6 +8,7 @@
 # Hints for OSX:
 # http://stackoverflow.com/questions/20108407/how-do-i-compile-boost-for-os-x-64b-platforms-with-stdlibc
 
+#set -x -e
 set -x -e
 set -o pipefail
 
@@ -81,7 +82,3 @@ fi
     --with-python \
     -j"${CPU_COUNT}" \
     install 2>&1 | tee b2.log
-
-echo "****************************install-py-boost**********************************************"
-ls "${PREFIX}/include/boost/python.hpp"
-echo "******************************************************************************************"

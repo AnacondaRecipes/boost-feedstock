@@ -63,7 +63,6 @@ outputs:
 #        - b2 --help
 #        - bjam --help
         # Verify Python headers are removed.
-        - echo "****************************test-lib-boost**********************************************"
         - "! test -f $PREFIX/include/boost/python.hpp"                      # [unix]
         - "! test -d $PREFIX/include/boost/python"                          # [unix]
         - if exist %PREFIX%\Library\include\boost\boost\python.hpp exit 1     # [win]
@@ -143,24 +142,22 @@ outputs:
         - numpy
       commands:
         # verify Python headers
-        - echo "****************************test-py-boost**********************************************"
         - test -f $PREFIX/include/boost/python.hpp                # [unix]
         - test -d $PREFIX/include/boost/python                    # [unix]
         - if not exist %PREFIX%\Library\include\boost\python\python.hpp exit 1    # [win]
         - if not exist %PREFIX%\Library\include\boost\python exit 1        # [win]
 
         # Verify libraries.
-        {% set py_boost_libs = [
-                "python",
-                "numpy"
+        {% set boost_libs = [
+            "python%s" % py,
+            "numpy%s" % py
         ] %}
-        {% for each_py_boost_lib in py_boost_libs %}
-        - test -f $PREFIX/lib/libboost_{{ each_py_boost_lib }}.a                                                  # [unix]
-        - test -f $PREFIX/lib/libboost_{{ each_py_boost_lib }}{{ py }}.a                                          # [unix]
-        - test -f $PREFIX/lib/libboost_{{ each_py_boost_lib }}${SHLIB_EXT}                                        # [unix]
-        - test -f $PREFIX/lib/libboost_{{ each_py_boost_lib }}{{ py }}${SHLIB_EXT}                                # [unix]
-        - if not exist %PREFIX%\Library\bin\boost_{{ each_py_boost_lib }}{{ py }}.dll exit 1  # [win]
-        - if not exist %PREFIX%\Library\lib\boost_{{ each_py_boost_lib }}{{ py }}.lib exit 1  # [win]
+        {% for each_boost_lib in boost_libs %}
+        - test -f $PREFIX/lib/libboost_{{ each_boost_lib }}.a                                                 # [unix]
+        - test -f $PREFIX/lib/libboost_{{ each_boost_lib }}${SHLIB_EXT}                                       # [unix]
+        - if not exist %PREFIX%\\Library\\bin\\boost_{{ each_boost_lib }}.dll exit 1                          # [win]
+        - if not exist %PREFIX%\\Library\\lib\\boost_{{ each_boost_lib }}.lib exit 1                          # [win]
+        - if not exist %PREFIX%\\Library\\lib\\libboost_{{ each_boost_lib }}.lib exit 1                       # [win]
         {% endfor %}
 
 
