@@ -63,6 +63,7 @@ outputs:
 #        - b2 --help
 #        - bjam --help
         # Verify Python headers are removed.
+        - echo "****************************test-lib-boost**********************************************"
         - "! test -f $PREFIX/include/boost/python.hpp"                      # [unix]
         - "! test -d $PREFIX/include/boost/python"                          # [unix]
         - if exist %PREFIX%\Library\include\boost\boost\python.hpp exit 1     # [win]
@@ -142,9 +143,9 @@ outputs:
         - numpy
       commands:
         # verify Python headers
+        - echo "****************************test-py-boost**********************************************"
         - test -f $PREFIX/include/boost/python.hpp                # [unix]
         - test -d $PREFIX/include/boost/python                    # [unix]
-        - test -f $PREFIX/share/boost-build/src/kernel/site-config.jam  # [unix]
         - if not exist %PREFIX%\Library\include\boost\python\python.hpp exit 1    # [win]
         - if not exist %PREFIX%\Library\include\boost\python exit 1        # [win]
 

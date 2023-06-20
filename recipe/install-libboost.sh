@@ -56,10 +56,6 @@ elif [[ "$target_platform" == linux-* ]]; then
     BINARY_FORMAT="elf"
 fi
 
-echo "1**************************************************************************"
-echo "SHELL $SHELL"
-echo "1**************************************************************************"
-
 ./b2 -q \
     variant=release \
     address-model="${ADDRESS_MODEL}" \
@@ -69,7 +65,7 @@ echo "1*************************************************************************
     debug-symbols=off \
     threading=multi \
     runtime-link=shared \
-    link=shared \
+    link=static,shared \
     toolset=${TOOLSET} \
     include="${INCLUDE_PATH}" \
     cxxflags="${CXXFLAGS}" \
@@ -81,3 +77,6 @@ echo "1*************************************************************************
 # Remove Python headers as we don't build Boost.Python.
 rm "${PREFIX}/include/boost/python.hpp"
 rm -r "${PREFIX}/include/boost/python"
+
+echo "****************************install-lib-boost**********************************************"
+echo "******************************************************************************************"
