@@ -11,7 +11,6 @@ source:
   sha256: a6e1ab9b0860e6a2881dd7b21fe9f737a095e5f33a3a874afc6a345228597ee6
   patches:
     - 0001-CONDA_BUILD-customization.patch
-#    - 0002-boost.python-fix-python-lib-config-abiflags.patch
     - 0003-boost.python-fix-unix-library-paths-and-darwin-sysroot.patch
     - 0005-boost.python-add-Library-include-and-lib-on-Win.patch
     - 0006-pass-CXX-CXXFLAGS-as-params-to-engine-build.sh.patch
@@ -33,6 +32,7 @@ requirements:
     - xz >=5.2.5 # [unix]
     - zstd >=1.4.5
     - zlib >=1.2.11
+    - python
 
 outputs:
   - name: libboost
@@ -53,6 +53,8 @@ outputs:
         - xz >=5.2.5 #[unix]
         - zstd >=1.4.5
         - zlib >=1.2.11
+#python in common version does not work, bug ?        
+        - python
     test:
       requires:
         - {{ compiler('cxx') }}
@@ -60,8 +62,15 @@ outputs:
         - tests
       commands:
         # Verify b2 and bjam executables work
-#        - b2 --help
-#        - bjam --help
+        - b2 --help
+        - bjam --help
+
+        - pushd tests
+        -   ./libboost_test.sh  # [not win and not (aarch64 or s390x)]
+        -   libboost_test.bat  # [win]
+        - popd
+
+
         # Verify Python headers are removed.
         - "! test -f $PREFIX/include/boost/python.hpp"                      # [unix]
         - "! test -d $PREFIX/include/boost/python"                          # [unix]
@@ -134,6 +143,7 @@ outputs:
       run:
         - {{ pin_subpackage('libboost', exact=True) }}
         - python
+        - {{ compiler('cxx') }}
     test:
       source_files: libs/python/example/*
       files: tests
@@ -141,6 +151,9 @@ outputs:
         - {{ compiler('cxx') }}
         - numpy
       commands:
+        - pushd tests
+        - ./pyboost_test.sh  # [not win]
+        - popd
         # verify Python headers
         - test -f $PREFIX/include/boost/python.hpp                # [unix]
         - test -d $PREFIX/include/boost/python                    # [unix]
@@ -164,21 +177,21 @@ outputs:
   # Metapackages to mirror conda-forge's name. It is my goal to deprecate
   # these names and eventually stop providing the packages.
   # TODO :: Aim to remove these by Oct 10th 2018.
-  #- name: boost-cpp
-  #  requirements:
-  #    build:
-  #      - {{ compiler('c') }}
-  #    run:
-  #      - {{ pin_subpackage('libboost', exact=True) }}
+  - name: boost-cpp
+    requirements:
+      build:
+        - {{ compiler('cxx') }}
+      run:
+        - {{ pin_subpackage('libboost', exact=True) }}
 
-  #- name: boost
-  #  requirements:
-  #    host:
-  #      - python
-  #    run:
-  #      - {{ pin_subpackage('libboost', exact=True) }}
-  #      - {{ pin_subpackage('py-boost', exact=True) }}
-  #      - python
+  - name: boost
+    requirements:
+      host:
+        - python
+      run:
+        - {{ pin_subpackage('libboost', exact=True) }}
+        - {{ pin_subpackage('py-boost', exact=True) }}
+        - python
 
 about:
   home: https://www.boost.org/
@@ -186,6 +199,9 @@ about:
   license_family: OTHER
   license_file: LICENSE_1_0.txt
   summary: Free peer-reviewed portable C++ source libraries.
+  description: |
+    Boost is a set of libraries for the C++ programming language that provides support for tasks and structures such as 
+    linear algebra, pseudorandom number generation, multithreading, image processing, regular expressions, and unit testing.
   dev_url: https://github.com/boostorg/boost
   doc_url: https://www.boost.org/doc/
 
