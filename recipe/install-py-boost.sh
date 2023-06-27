@@ -1,7 +1,6 @@
 #!/bin/bash
 
 set -x -e
-set -o pipefail
 
 . ${RECIPE_DIR}/common.sh
 
