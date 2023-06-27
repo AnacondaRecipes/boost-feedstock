@@ -1,5 +1,5 @@
-channels:
-  icu73: icu73
+#channels:
+#  icu73: icu73
 
-aggregate_branch: icu-73.1
+#aggregate_branch: icu-73.1
 
