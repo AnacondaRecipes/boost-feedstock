@@ -119,12 +119,15 @@ outputs:
                 "wserialization"
         ] %}
         {% for each_boost_lib in boost_libs %}
+          # boost figures out by itself that cannot build math_c99l and math_tr1l on linux-ppc64le, so skip it 
+          {% if target_platform != "linux-ppc64le" or each_boost_lib not in ["math_c99l", "math_tr1l"] %}
         - test -f $PREFIX/lib/libboost_{{ each_boost_lib }}.a                         # [unix]
         - test -f $PREFIX/lib/libboost_{{ each_boost_lib }}.dylib                     # [osx]
         - test -f $PREFIX/lib/libboost_{{ each_boost_lib }}.so                        # [linux]
         - if not exist %PREFIX%\Library\bin\boost_{{ each_boost_lib }}.dll exit 1     # [win]
         - if not exist %PREFIX%\Library\lib\boost_{{ each_boost_lib }}.lib exit 1     # [win]
         - if exist %PREFIX%\\Library\\lib\\libboost_{{ each_boost_lib }}.lib exit 1   # [win]
+          {% endif %}
         {% endfor %}
 
   - name: py-boost
