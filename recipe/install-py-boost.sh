@@ -13,6 +13,7 @@ set -x -e
     toolset=${TOOLSET} \
     cxxflags="${CXXFLAGS}" \
     linkflags="${LDFLAGS}" \
+    --with-python \
     python=${PY_VER} \
     -j"${CPU_COUNT}" \
     install

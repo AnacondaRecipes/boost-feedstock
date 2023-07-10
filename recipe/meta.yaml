@@ -192,22 +192,21 @@ outputs:
   # these names and eventually stop providing the packages.
   # TODO :: Aim to remove these by Oct 10th 2018.
 
-  #Those 2 packages does not have anything except info folder possibly causing problems with upload
-  #- name: boost-cpp
-  #  requirements:
-  #    build:
-  #      - {{ compiler('cxx') }}
-  #    run:
-  #      - {{ pin_subpackage('libboost', exact=True) }}
+  - name: boost-cpp
+    requirements:
+      build:
+        - {{ compiler('cxx') }}
+      run:
+        - {{ pin_subpackage('libboost', exact=True) }}
 
-  #- name: boost
-  #  requirements:
-  #    host:
-  #      - python
-  #    run:
-  #      - {{ pin_subpackage('libboost', exact=True) }}
-  #      - {{ pin_subpackage('py-boost', exact=True) }}
-  #      - python
+  - name: boost
+    requirements:
+      host:
+        - python
+      run:
+        - {{ pin_subpackage('libboost', exact=True) }}
+        - {{ pin_subpackage('py-boost', exact=True) }}
+        - python
 
 about:
   home: https://www.boost.org/

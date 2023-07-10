@@ -14,14 +14,13 @@ set -x -e
     toolset=${TOOLSET} \
     cxxflags="${CXXFLAGS}" \
     linkflags="${LDFLAGS}" \
-    python=${PY_VER} \
+    --without-python \
     -j"${CPU_COUNT}" \
     install
 
 # Remove Python headers as we don't build Boost.Python.
 rm -f "${PREFIX}/include/boost/python.hpp"
 rm -rf "${PREFIX}/include/boost/python"
-rm -f ${PREFIX}/lib/libboost_python*
 
 #build b2 engine
 pushd tools/build
