@@ -59,17 +59,16 @@ outputs:
       requires:
         - {{ compiler('cxx') }}
       files:
-        - tests
+        - tests/libboost
       commands:
         # Verify b2 and bjam executables work
         - b2 --help
         - bjam --help
 
-        - pushd tests
+        - pushd tests/libboost
         -   ./libboost_test.sh  # [not win and not (aarch64 or s390x)]
         -   libboost_test.bat  # [win]
         - popd
-
 
         # Verify Python headers are removed.
         - "! test -f $PREFIX/include/boost/python.hpp"                      # [unix]
@@ -154,7 +153,7 @@ outputs:
         - {{ compiler('cxx') }}
         - numpy
       commands:
-        - pushd tests
+        - pushd tests/pyboost
         - ./pyboost_test.sh  # [not win]
         - popd
         # verify Python headers
@@ -180,21 +179,23 @@ outputs:
   # Metapackages to mirror conda-forge's name. It is my goal to deprecate
   # these names and eventually stop providing the packages.
   # TODO :: Aim to remove these by Oct 10th 2018.
-  - name: boost-cpp
-    requirements:
-      build:
-        - {{ compiler('cxx') }}
-      run:
-        - {{ pin_subpackage('libboost', exact=True) }}
 
-  - name: boost
-    requirements:
-      host:
-        - python
-      run:
-        - {{ pin_subpackage('libboost', exact=True) }}
-        - {{ pin_subpackage('py-boost', exact=True) }}
-        - python
+  #Those 2 packages does not have anything except info folder possibly causing problems with upload
+  #- name: boost-cpp
+  #  requirements:
+  #    build:
+  #      - {{ compiler('cxx') }}
+  #    run:
+  #      - {{ pin_subpackage('libboost', exact=True) }}
+
+  #- name: boost
+  #  requirements:
+  #    host:
+  #      - python
+  #    run:
+  #      - {{ pin_subpackage('libboost', exact=True) }}
+  #      - {{ pin_subpackage('py-boost', exact=True) }}
+  #      - python
 
 about:
   home: https://www.boost.org/

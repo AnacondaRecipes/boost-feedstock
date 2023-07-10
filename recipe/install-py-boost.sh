@@ -4,7 +4,19 @@ set -x -e
 
 . ${RECIPE_DIR}/common.sh
 
-./b2 install
+./b2 -q \
+    variant=release \
+    debug-symbols=off \
+    threading=multi \
+    runtime-link=shared \
+    link=static,shared \
+    toolset=${TOOLSET} \
+    cxxflags="${CXXFLAGS}" \
+    linkflags="${LDFLAGS}" \
+    python=${PY_VER} \
+    -j"${CPU_COUNT}" \
+    install
+
 
 pushd "${PREFIX}/lib"
   [[ -f libboost_python.a ]] || ln -s libboost_python${PY_VER//./}.a libboost_python.a
