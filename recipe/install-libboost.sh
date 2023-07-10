@@ -21,7 +21,7 @@ set -x -e
 # Remove Python headers as we don't build Boost.Python.
 rm -f "${PREFIX}/include/boost/python.hpp"
 rm -rf "${PREFIX}/include/boost/python"
-rm -f "${PREFIX}/lib/libboost_python*"
+rm -f ${PREFIX}/lib/libboost_python*
 
 #build b2 engine
 pushd tools/build

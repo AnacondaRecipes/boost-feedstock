@@ -73,9 +73,21 @@ outputs:
         # Verify Python headers are removed.
         - "! test -f $PREFIX/include/boost/python.hpp"                      # [unix]
         - "! test -d $PREFIX/include/boost/python"                          # [unix]
-        - if exist %PREFIX%\Library\include\boost\boost\python.hpp exit 1     # [win]
-        - if exist %PREFIX%\Library\include\boost\python exit 1         # [win]
+        - if exist %PREFIX%\Library\include\boost\boost\python.hpp exit 1   # [win]
+        - if exist %PREFIX%\Library\include\boost\python exit 1             # [win]
 
+        # Verify Python libs are removed.
+        {% set py_libs = [
+            "python%s" % py,
+            "numpy%s" % py
+        ] %}
+
+        {% for each_py_lib in py_libs %}
+        - "! test -f $PREFIX/lib/libboost_ {{ each_py_lib }}.a"                # [unix]
+        - "! test -f $PREFIX/lib/libboost_{{ each_py_lib }}${SHLIB_EXT}"       # [unix]
+        {% endfor %}
+
+        
         # Verify a header exists.
         - test -f $PREFIX/include/boost/assert.hpp  # [unix]
         - if not exist %PREFIX%\Library\include\boost\assert.hpp exit 1  # [win]
