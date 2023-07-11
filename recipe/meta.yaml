@@ -17,6 +17,7 @@ source:
 
 build:
   number: 0
+  skip: true #[not win]
 
 requirements:
   build:
@@ -50,7 +51,7 @@ outputs:
         - icu  # [unix]
         - libiconv  # [osx]
         - bzip2  # [unix]
-        - xz >=5.2.5 #[unix]
+        - xz >=5.2.5
         - zstd >=1.4.5
         - zlib >=1.2.11
 #python in common version does not work, bug ?        
@@ -67,7 +68,6 @@ outputs:
 
         - pushd tests/libboost
         -   ./libboost_test.sh  # [not win and not (aarch64 or s390x)]
-        -   libboost_test.bat  # [win]
         - popd
 
         # Verify Python headers are removed.

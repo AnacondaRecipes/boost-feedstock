@@ -82,21 +82,21 @@ if errorlevel 1 exit /b 1
 copy .\b2.exe %LIBRARY_BIN%\bjam.exe
 if errorlevel 1 exit /b 1
 
-mkdir "%LIBRARY_PREFIX%\share\boost-build\src\build"
-mkdir "%LIBRARY_PREFIX%\share\boost-build\src\kernel"
-mkdir "%LIBRARY_PREFIX%\share\boost-build\src\options"
-mkdir "%LIBRARY_PREFIX%\share\boost-build\src\tools"
-mkdir "%LIBRARY_PREFIX%\share\boost-build\src\util"
+mkdir "%LIBRARY_PREFIX%\share\b2\src\build"
+mkdir "%LIBRARY_PREFIX%\share\b2\src\kernel"
+mkdir "%LIBRARY_PREFIX%\share\b2\src\options"
+mkdir "%LIBRARY_PREFIX%\share\b2\src\tools"
+mkdir "%LIBRARY_PREFIX%\share\b2\src\util"
 pushd tools\build\src
-  robocopy /E %DEBUG_ROBOCOPY% build   "%LIBRARY_PREFIX%\share\boost-build\src\build"
-  robocopy /E %DEBUG_ROBOCOPY% kernel  "%LIBRARY_PREFIX%\share\boost-build\src\kernel"
-  robocopy /E %DEBUG_ROBOCOPY% options "%LIBRARY_PREFIX%\share\boost-build\src\options"
-  robocopy /E %DEBUG_ROBOCOPY% tools   "%LIBRARY_PREFIX%\share\boost-build\src\tools"
-  robocopy /E %DEBUG_ROBOCOPY% util    "%LIBRARY_PREFIX%\share\boost-build\src\util"
-  copy /y build-system.jam "%LIBRARY_PREFIX%\share\boost-build\src"
+  robocopy /E %DEBUG_ROBOCOPY% build   "%LIBRARY_PREFIX%\share\b2\src\build"
+  robocopy /E %DEBUG_ROBOCOPY% kernel  "%LIBRARY_PREFIX%\share\b2\src\kernel"
+  robocopy /E %DEBUG_ROBOCOPY% options "%LIBRARY_PREFIX%\share\b2\src\options"
+  robocopy /E %DEBUG_ROBOCOPY% tools   "%LIBRARY_PREFIX%\share\b2\src\tools"
+  robocopy /E %DEBUG_ROBOCOPY% util    "%LIBRARY_PREFIX%\share\b2\src\util"
+  copy /y build-system.jam "%LIBRARY_PREFIX%\share\b2\src"
 popd
 pushd tools\build
-  copy *.jam "%LIBRARY_PREFIX%\share\boost-build"
+  copy *.jam "%LIBRARY_PREFIX%\share\b2"
 popd
 
 exit /b 0
