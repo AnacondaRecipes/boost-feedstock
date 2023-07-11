@@ -68,6 +68,7 @@ outputs:
 
         - pushd tests/libboost
         -   ./libboost_test.sh  # [not win and not (aarch64 or s390x)]
+        -   ./libboost_test.bat  # [win]
         - popd
 
         # Verify Python headers are removed.
