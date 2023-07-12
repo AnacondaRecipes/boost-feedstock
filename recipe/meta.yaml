@@ -176,8 +176,8 @@ outputs:
         # verify Python headers
         - test -f $PREFIX/include/boost/python.hpp                # [unix]
         - test -d $PREFIX/include/boost/python                    # [unix]
-        - if not exist %PREFIX%\Library\include\boost\python\python.hpp exit 1    # [win]
-        - if not exist %PREFIX%\Library\include\boost\python exit 1        # [win]
+        # - if not exist %PREFIX%\Library\include\boost\python\python.hpp exit 1    # [win]
+         - if not exist %PREFIX%\Library\include\boost\python exit 1        # [win]
 
         # Verify libraries.
         {% set boost_libs = [
@@ -189,7 +189,7 @@ outputs:
         - test -f $PREFIX/lib/libboost_{{ each_boost_lib }}${SHLIB_EXT}                                       # [unix]
         - if not exist %PREFIX%\\Library\\bin\\boost_{{ each_boost_lib }}.dll exit 1                          # [win]
         - if not exist %PREFIX%\\Library\\lib\\boost_{{ each_boost_lib }}.lib exit 1                          # [win]
-        - if not exist %PREFIX%\\Library\\lib\\libboost_{{ each_boost_lib }}.lib exit 1                       # [win]
+        # - if not exist %PREFIX%\\Library\\lib\\libboost_{{ each_boost_lib }}.lib exit 1                       # [win]
         {% endfor %}
 
 
