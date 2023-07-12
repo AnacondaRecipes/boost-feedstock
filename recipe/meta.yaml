@@ -66,9 +66,11 @@ outputs:
         - b2 --help
         - bjam --help
 
-        - pushd tests/libboost
-        -   ./libboost_test.sh  # [not win and not (aarch64 or s390x)]
-        -   ./libboost_test.bat  # [win]
+        - pushd tests
+        -   pushd libboost
+        -     ./libboost_test.sh  # [not win and not (aarch64 or s390x)]
+        -     ./libboost_test.bat  # [win]
+        -   popd
         - popd
 
         # Verify Python headers are removed.
@@ -166,8 +168,10 @@ outputs:
         - {{ compiler('cxx') }}
         - numpy
       commands:
-        - pushd tests/pyboost
-        - ./pyboost_test.sh  # [not win]
+        - pushd tests
+        -   pushd pyboost
+        -     ./pyboost_test.sh  # [not win]
+        -   popd
         - popd
         # verify Python headers
         - test -f $PREFIX/include/boost/python.hpp                # [unix]
