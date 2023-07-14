@@ -33,7 +33,9 @@ requirements:
     - xz >=5.2.5 # [unix]
     - zstd >=1.4.5
     - zlib >=1.2.11
+    - numpy
     - python
+
 
 outputs:
   - name: libboost
@@ -168,6 +170,10 @@ outputs:
         - {{ compiler('cxx') }}
         - numpy
       commands:
+        - echo on  # [win]
+        - dir %PREFIX%\Library\bin > marek_bin_dir.log    # [win]
+        - dir %PREFIX%\Library\lib > marek_lib_dir.log    # [win]
+        
         - pushd tests
         -   pushd pyboost
         -     ./pyboost_test.sh  # [not win]
@@ -176,8 +182,10 @@ outputs:
         # verify Python headers
         - test -f $PREFIX/include/boost/python.hpp                # [unix]
         - test -d $PREFIX/include/boost/python                    # [unix]
-        # - if not exist %PREFIX%\Library\include\boost\python\python.hpp exit 1    # [win]
-         - if not exist %PREFIX%\Library\include\boost\python exit 1        # [win]
+        - if not exist %PREFIX%\Library\include\boost\python\python.hpp exit 1    # [win]
+        - if not exist %PREFIX%\Library\include\boost\python exit 1        # [win]
+
+       
 
         # Verify libraries.
         {% set boost_libs = [
@@ -187,9 +195,9 @@ outputs:
         {% for each_boost_lib in boost_libs %}
         - test -f $PREFIX/lib/libboost_{{ each_boost_lib }}.a                                                 # [unix]
         - test -f $PREFIX/lib/libboost_{{ each_boost_lib }}${SHLIB_EXT}                                       # [unix]
-        - if not exist %PREFIX%\\Library\\bin\\boost_{{ each_boost_lib }}.dll exit 1                          # [win]
-        - if not exist %PREFIX%\\Library\\lib\\boost_{{ each_boost_lib }}.lib exit 1                          # [win]
-        # - if not exist %PREFIX%\\Library\\lib\\libboost_{{ each_boost_lib }}.lib exit 1                       # [win]
+        - if not exist %PREFIX%\Library\bin\boost_{{ each_boost_lib }}.dll exit 1                          # [win]
+        - if not exist %PREFIX%\Library\lib\boost_{{ each_boost_lib }}.lib exit 1                          # [win]
+        - if not exist %PREFIX%\Library\lib\libboost_{{ each_boost_lib }}.lib exit 1                       # [win]
         {% endfor %}
 
 
