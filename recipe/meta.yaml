@@ -33,9 +33,7 @@ requirements:
     - xz >=5.2.5 # [unix]
     - zstd >=1.4.5
     - zlib >=1.2.11
-    - numpy
     - python
-
 
 outputs:
   - name: libboost
@@ -67,7 +65,6 @@ outputs:
         # Verify b2 and bjam executables work
         - b2 --help
         - bjam --help
-
         - pushd tests
         -   pushd libboost
         -     ./libboost_test.sh  # [not win and not (aarch64 or s390x)]
@@ -162,7 +159,6 @@ outputs:
       run:
         - {{ pin_subpackage('libboost', exact=True) }}
         - python
-        - {{ compiler('cxx') }}
     test:
       source_files: libs/python/example/*
       files: tests
@@ -170,10 +166,6 @@ outputs:
         - {{ compiler('cxx') }}
         - numpy
       commands:
-        - echo on  # [win]
-        - dir %PREFIX%\Library\bin > marek_bin_dir.log    # [win]
-        - dir %PREFIX%\Library\lib > marek_lib_dir.log    # [win]
-        
         - pushd tests
         -   pushd pyboost
         -     ./pyboost_test.sh  # [not win]
@@ -184,8 +176,6 @@ outputs:
         - test -d $PREFIX/include/boost/python                    # [unix]
         - if not exist %PREFIX%\Library\include\boost\python\python.hpp exit 1    # [win]
         - if not exist %PREFIX%\Library\include\boost\python exit 1        # [win]
-
-       
 
         # Verify libraries.
         {% set boost_libs = [

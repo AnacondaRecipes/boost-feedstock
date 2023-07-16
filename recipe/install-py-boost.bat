@@ -7,20 +7,6 @@ set PY_VER_ND=%PY_VER:.=%
 set INSTLOC=%CD%\py-boost-inst-%PY_VER%-%ARCH%
 set DEBUG_ROBOCOPY=/NFL /NDL
 
-.\b2                         ^
-  --prefix=%INSTLOC%  ^
-  --layout=%LAYOUT%          ^
-  toolset=%TOOLSET%          ^
-  address-model=%ARCH%       ^
-  variant=release            ^
-  threading=multi            ^
-  link=static,shared         ^
-  -j%CPU_COUNT%              ^
-  --with-python              ^
-  --reconfigure              ^
-  python=%PY_VER%            ^
-  clean
-
 
 .\b2                         ^
   --prefix=%INSTLOC%  ^
@@ -48,6 +34,3 @@ move /y %INSTLOC%\lib\boost*.lib "%LIBRARY_LIB%"
 move /y %INSTLOC%\lib\libboost*.lib "%LIBRARY_LIB%"
 move /y %INSTLOC%\lib\boost*.dll "%LIBRARY_BIN%"
   
-
-:: cp "%LIBRARY_LIB%\libboost_python%PY_VER_ND%.lib" "%LIBRARY_LIB%\libboost_python.lib"
-:: cp "%LIBRARY_LIB%\libboost_numpy%PY_VER_ND%.lib" "%LIBRARY_LIB%\libboost_numpy.lib"
