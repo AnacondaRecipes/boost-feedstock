@@ -20,16 +20,9 @@ if errorlevel 1 (
   exit /b 1
 )
 
-:: Move DLLs to LIBRARY_BIN
-:: move %LIBRARY_LIB%\boost*.dll "%LIBRARY_BIN%"
-:: if errorlevel 1 exit 1
-
-
 :: Remove Python headers as we don't build Boost.Python.
 if exist %LIBRARY_INC%\boost\python.hpp del %LIBRARY_INC%\boost\python.hpp
 if exist %LIBRARY_INC%\boost\python rmdir /s /q %LIBRARY_INC%\boost\python
-
-
 
 pushd tools\build
 call bootstrap.bat

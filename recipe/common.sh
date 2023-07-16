@@ -1,5 +1,4 @@
 #!/bin/bash
-#!/usr/bin/env bash
 
 if [[ "${target_platform}" == osx* ]]; then
     TOOLSET=clang
