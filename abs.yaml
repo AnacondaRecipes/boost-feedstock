@@ -2,6 +2,7 @@ channels:
   icu73: icu73
 
 aggregate_branch: icu-73.1
+upload_without_merge: true
 
 build_parameters:
   - "--suppress-variables"
