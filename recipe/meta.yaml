@@ -28,7 +28,7 @@ requirements:
     - libiconv  # [osx]
     - bzip2  # [unix]
     - xz >=5.2.5 # [unix]
-    - zstd >=1.4.5
+    - zstd {{ zstd }}
     - zlib >=1.2.11
     - python
 
@@ -49,7 +49,7 @@ outputs:
         - libiconv  # [osx]
         - bzip2  # [unix]
         - xz >=5.2.5
-        - zstd >=1.4.5
+        - zstd {{ zstd }}
         - zlib >=1.2.11
 #python in common version does not work, bug ?        
         - python
