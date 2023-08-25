@@ -24,7 +24,7 @@ requirements:
     - m2-coreutils  # [win]
     - m2-gcc-libs  # [win]
   host:
-    - icu  # [unix]
+    - icu 73  # [unix]
     - libiconv  # [osx]
     - bzip2  # [unix]
     - xz >=5.2.5 # [unix]
@@ -45,7 +45,7 @@ outputs:
         - m2-coreutils  # [win]
         - m2-gcc-libs  # [win]
       host:
-        - icu  # [unix]
+        - icu 73 # [unix]
         - libiconv  # [osx]
         - bzip2  # [unix]
         - xz >=5.2.5
