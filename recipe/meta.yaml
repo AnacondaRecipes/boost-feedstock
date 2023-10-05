@@ -37,13 +37,6 @@ outputs:
     build:
       missing_dso_whitelist:
         - '$RPATH/ld64.so.1'               # [s390x]
-        - '$RPATH/boost_serialization.dll' #[win]
-        - '$RPATH/boost_thread.dll'        #[win]
-        - '$RPATH/boost_context.dll'       #[win]
-        - '$RPATH/boost_chrono.dll'        #[win]
-        - '$RPATH/boost_filesystem.dll'    #[win]
-        - '$RPATH/boost_atomic.dll'        #[win]
-        - '$RPATH/boost_log.dll'           #[win]
 
     script: install-libboost.sh   # [unix]
     script: install-libboost.bat  # [win]
