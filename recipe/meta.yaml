@@ -65,8 +65,8 @@ outputs:
         - bjam --help
         - pushd tests
         -   pushd libboost
-        -     ./libboost_test.sh  # [not win and not (aarch64 or s390x)]
-        -     ./libboost_test.bat  # [win]
+        -     source ./libboost_test.sh  # [not win and not (aarch64 or s390x)]
+        -     call libboost_test.bat  # [win]
         -   popd
         - popd
 
@@ -137,7 +137,7 @@ outputs:
         - test -f $PREFIX/lib/libboost_{{ each_boost_lib }}.so                        # [linux]
         - if not exist %PREFIX%\Library\bin\boost_{{ each_boost_lib }}.dll exit 1     # [win]
         - if not exist %PREFIX%\Library\lib\boost_{{ each_boost_lib }}.lib exit 1     # [win]
-        - if exist %PREFIX%\\Library\\lib\\libboost_{{ each_boost_lib }}.lib exit 1   # [win]
+        - if not exist %PREFIX%\\Library\\lib\\libboost_{{ each_boost_lib }}.lib exit 1   # [win]
           {% endif %}
         {% endfor %}
 
