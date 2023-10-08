@@ -30,6 +30,7 @@ call bootstrap.bat
 b2 install --prefix=%LIBRARY_PREFIX%\share
 popd
 
+move %LIBRARY_PREFIX%\lib\boost_*.dll %LIBRARY_BIN%
 move %LIBRARY_PREFIX%\share\.b2 %LIBRARY_PREFIX%\share\b2
 copy %LIBRARY_PREFIX%\share\b2.exe %LIBRARY_BIN%\b2.exe
 copy %LIBRARY_PREFIX%\share\b2.exe %LIBRARY_BIN%\bjam.exe
