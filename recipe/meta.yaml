@@ -223,6 +223,11 @@ about:
   doc_url: https://www.boost.org/doc/
 
 extra:
+  anaconda-services:
+    ref: https://anaconda.zendesk.com/agent/tickets/70829
+    reason: Dependency for chromadb
+  recipe-maintainers:
+    - ianaobi
   recipe-maintainers:
     - ccordoba12
     - jakirkham
