@@ -6,7 +6,7 @@ package:
 
 source:
   url: https://boostorg.jfrog.io/artifactory/main/release/{{ version }}/source/boost_{{ version.replace(".", "_") }}.tar.bz2
-  sha256: 46d9d2c06637b219270877c9e16155cbd015b6dc84349af064c088e9b5b12f7b
+  sha256: e0f020de72913559199b5698b1f50a733dcfd7e1b0532de4a2357c3baca95e0f
   patches:
     - 0001-CONDA_BUILD-customization.patch
     - 0003-boost.python-fix-unix-library-paths-and-darwin-sysroot.patch
