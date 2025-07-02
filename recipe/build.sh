@@ -23,4 +23,5 @@ cat <<EOF > ${SRC_DIR}/tools/build/src/site-config.jam
                   <linkflags>"${LDFLAGS}"
                   <ranlib>$(basename ${RANLIB})
               ;
+    using python : ${PY_VER} : ${PYTHON} : ${PREFIX}/include/python${PY_VER} : ${PREFIX}/lib ;
 EOF

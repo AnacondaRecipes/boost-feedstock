@@ -30,4 +30,5 @@ pushd tools/build
  cp ${PREFIX}/bin/b2 ${PREFIX}/bin/bjam
 popd
 
+mkdir -p ${PREFIX}/share/b2/src/kernel/
 cp tools/build/src/site-config.jam ${PREFIX}/share/b2/src/kernel/
