@@ -1,4 +1,4 @@
-{% set version = "1.82.0" %}
+{% set version = "1.88.0" %}
 
 package:
   name: boost-split
@@ -6,7 +6,7 @@ package:
 
 source:
   url: https://boostorg.jfrog.io/artifactory/main/release/{{ version }}/source/boost_{{ version.replace(".", "_") }}.tar.bz2
-  sha256: a6e1ab9b0860e6a2881dd7b21fe9f737a095e5f33a3a874afc6a345228597ee6
+  sha256: 46d9d2c06637b219270877c9e16155cbd015b6dc84349af064c088e9b5b12f7b
   patches:
     - 0001-CONDA_BUILD-customization.patch
     - 0003-boost.python-fix-unix-library-paths-and-darwin-sysroot.patch
@@ -14,8 +14,7 @@ source:
     - 0006-pass-CXX-CXXFLAGS-as-params-to-engine-build.sh.patch
 
 build:
-  number: 2
-  
+  number: 0
 requirements:
   build:
     - {{ compiler('cxx') }}
@@ -46,14 +45,16 @@ outputs:
         - m2-coreutils  # [win]
         - m2-gcc-libs  # [win]
       host:
-        - icu 73 # [unix]
-        - libiconv  # [osx]
-        - bzip2  # [unix]
+        - icu  # [unix]
+        - libiconv  # [win]
+        - bzip2
         - xz >=5.2.5
         - zstd {{ zstd }}
         - zlib {{ zlib }}
-#python in common version does not work, bug ?        
         - python
+      run_constrained:
+        # avoid co-installation with old naming of package
+        - boost-cpp <0.0a0
     test:
       requires:
         - {{ compiler('cxx') }}
@@ -87,7 +88,7 @@ outputs:
         - "! test -f $PREFIX/lib/libboost_{{ each_py_lib }}${SHLIB_EXT}"       # [unix]
         {% endfor %}
 
-        
+
         # Verify a header exists.
         - test -f $PREFIX/include/boost/assert.hpp  # [unix]
         - if not exist %PREFIX%\Library\include\boost\assert.hpp exit 1  # [win]
@@ -99,9 +100,12 @@ outputs:
         # Verify libraries.
         {% set boost_libs = [
                 "atomic",
+                "charconv",
                 "chrono",
+                "cobalt",
                 "container",
                 "context",
+                "contract",
                 "coroutine",
                 "date_time",
                 "filesystem",
@@ -130,7 +134,7 @@ outputs:
                 "wserialization"
         ] %}
         {% for each_boost_lib in boost_libs %}
-          # boost figures out by itself that cannot build math_c99l and math_tr1l on linux-ppc64le, so skip it 
+          # boost figures out by itself that cannot build math_c99l and math_tr1l on linux-ppc64le, so skip it
           {% if target_platform != "linux-ppc64le" or each_boost_lib not in ["math_c99l", "math_tr1l"] %}
         - test -f $PREFIX/lib/libboost_{{ each_boost_lib }}.a                         # [unix]
         - test -f $PREFIX/lib/libboost_{{ each_boost_lib }}.dylib                     # [osx]
@@ -216,7 +220,7 @@ about:
   license_file: LICENSE_1_0.txt
   summary: Free peer-reviewed portable C++ source libraries.
   description: |
-    Boost is a set of libraries for the C++ programming language that provides support for tasks and structures such as 
+    Boost is a set of libraries for the C++ programming language that provides support for tasks and structures such as
     linear algebra, pseudorandom number generation, multithreading, image processing, regular expressions, and unit testing.
   dev_url: https://github.com/boostorg/boost
   doc_url: https://www.boost.org/doc/
