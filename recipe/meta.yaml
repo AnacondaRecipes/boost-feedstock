@@ -167,7 +167,6 @@ outputs:
       files: tests
       requires:
         - {{ compiler('cxx') }}
-        - python
         - numpy
       commands:
         - pushd tests
