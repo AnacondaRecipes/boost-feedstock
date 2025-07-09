@@ -38,17 +38,17 @@ requirements:
     - {{ compiler('cxx') }}
     - {{ stdlib('c') }}
     - cross-python_{{ target_platform }}     # [build_platform != target_platform]
-    - python {{ PY_DUMMY_VER }}.* *_cpython  # [build_platform != target_platform]
+    - python {{ PY_DUMMY_VER }}.*  # [build_platform != target_platform]
     - numpy {{ NP_DUMMY_VER }}.*             # [build_platform != target_platform]
     - ruby *
   host:
     - icu               # [unix]
-    - liblzma-devel     # [unix]
+    - xz                # [unix]
     - bzip2
     - zlib
     - zstd
     # see above
-    - python {{ PY_DUMMY_VER }}.* *_cpython
+    - python {{ PY_DUMMY_VER }}.*
     - numpy {{ NP_DUMMY_VER }}.*
 
 outputs:
@@ -105,7 +105,7 @@ outputs:
         - icu               # [unix]
         - libiconv          # [win]
         - bzip2
-        - liblzma-devel
+        - xz
         - zlib
         - zstd
       run_constrained:
