@@ -225,6 +225,7 @@ outputs:
         - {{ pin_subpackage("libboost-devel", exact=True) }}
       run:
         - python
+        - {{ pin_subpackage("libboost", exact=True) }}
       run_constrained:
         # avoid co-installation with old naming of package
         - boost <0.0a0
