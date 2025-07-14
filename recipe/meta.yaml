@@ -51,7 +51,6 @@ outputs:
         - xz >=5.2.5
         - zstd {{ zstd }}
         - zlib {{ zlib }}
-        - python
       run_constrained:
         # avoid co-installation with old naming of package
         - boost-cpp <0.0a0
