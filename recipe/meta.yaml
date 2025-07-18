@@ -29,7 +29,7 @@ source:
 
 build:
   number: 0
-  skip: true
+  skip: true #[py<39]
 
 requirements:
   build:
