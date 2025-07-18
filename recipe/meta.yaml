@@ -29,7 +29,7 @@ source:
 
 build:
   number: 0
-  skip: true  # [not linux]
+  skip: true
 
 requirements:
   build:
