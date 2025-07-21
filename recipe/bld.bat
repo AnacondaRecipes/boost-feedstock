@@ -7,19 +7,15 @@ if not exist temp_prefix mkdir temp_prefix
 call bootstrap.bat
 
 :: Build and install to temp_prefix
-b2 -q ^
+.\b2 install ^
+    --prefix=temp_prefix ^
+    toolset=msvc-%VS_MAJOR%.0 ^
+    address-model=%ARCH% ^
     variant=release ^
-    debug-symbols=off ^
     threading=multi ^
     runtime-link=shared ^
     link=static,shared ^
-    address-model=%ARCH% ^
-    architecture=x86 ^
-    cxxflags="%CXXFLAGS%" ^
-    linkflags="%LDFLAGS%" ^
     --without-python ^
-    -j%CPU_COUNT% ^
-    --prefix=temp_prefix ^
-    install
+    -j%CPU_COUNT%
 
 if errorlevel 1 exit 1
