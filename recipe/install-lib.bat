@@ -7,10 +7,11 @@ if [%PKG_NAME%] == [libboost-headers] (
     echo "robocopy done"
 ) else if [%PKG_NAME%] == [libboost] (
     REM only the libraries (don't copy CMake metadata)
-    move temp_prefix\lib\boost*.lib %LIBRARY_LIB%
-    move temp_prefix\lib\libboost*.lib %LIBRARY_LIB%
+    if exist temp_prefix\lib\boost*.lib move temp_prefix\lib\boost*.lib %LIBRARY_LIB%
+    if exist temp_prefix\lib\libboost*.lib move temp_prefix\lib\libboost*.lib %LIBRARY_LIB%
     REM dll's go to LIBRARY_BIN
-    move temp_prefix\lib\boost*.dll %LIBRARY_BIN%
+    if exist temp_prefix\lib\boost*.dll move temp_prefix\lib\boost*.dll %LIBRARY_BIN%
+    if exist temp_prefix\bin\boost*.dll move temp_prefix\bin\boost*.dll %LIBRARY_BIN%
 ) else (
     REM everything else
     xcopy /E /Y temp_prefix\lib %LIBRARY_LIB%
