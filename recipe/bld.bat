@@ -9,12 +9,13 @@ call bootstrap.bat
 :: Build and install to temp_prefix
 .\b2 install ^
     --prefix=temp_prefix ^
+    --layout=system ^
     toolset=msvc-%VS_MAJOR%.0 ^
     address-model=%ARCH% ^
     variant=release ^
     threading=multi ^
     runtime-link=shared ^
-    link=shared ^
+    link=static,shared ^
     --without-python ^
     -j%CPU_COUNT%
 
