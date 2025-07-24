@@ -35,8 +35,11 @@ build:
 
 requirements:
   build:
-    - {{ compiler('cxx') }}
+    - {{ compiler('cxx') }}  # [osx]
     - {{ stdlib('c') }}
+    - clang    # [linux or win]
+    - clangxx  # [linux or win]
+    - binutils  # [linux]
     - cross-python_{{ target_platform }}     # [build_platform != target_platform]
     - python {{ PY_DUMMY_VER }}.*  # [build_platform != target_platform]
     - numpy {{ NP_DUMMY_VER }}.*             # [build_platform != target_platform]
@@ -99,8 +102,10 @@ outputs:
     requirements:
       build:
         # for strong run-exports
-        - {{ compiler('cxx') }}
+        - {{ compiler('cxx') }}  # [osx]
         - {{ stdlib('c') }}
+        - clang    # [linux or win]
+        - clangxx  # [linux or win]
       host:
         - icu               # [unix]
         - libiconv          # [win]
@@ -129,31 +134,45 @@ outputs:
         # shared libraries
         {% if each_lib in boost_libs %}
         # default case: present
+        - echo "Testing for libboost_{{ each_lib }}.so"                   # [linux]
         - test -f $PREFIX/lib/libboost_{{ each_lib }}.so                  # [linux]
+        - echo "Testing for libboost_{{ each_lib }}.dylib"                # [osx]
         - test -f $PREFIX/lib/libboost_{{ each_lib }}.dylib               # [osx]
+        - echo "Testing for boost_{{ each_lib }}.dll"                     # [win]
         - if not exist %LIBRARY_BIN%\boost_{{ each_lib }}.dll exit 1      # [win]
+        - echo "Testing for boost_{{ each_lib }}.lib"                     # [win]
         - if not exist %LIBRARY_LIB%\boost_{{ each_lib }}.lib exit 1      # [win]
         {% else %}
         # absent for libs that are static-only & the python ones
+        - echo "Testing absence of libboost_{{ each_lib }}.so"            # [linux]
         - test ! -f $PREFIX/lib/libboost_{{ each_lib }}.so                # [linux]
+        - echo "Testing absence of libboost_{{ each_lib }}.dylib"         # [osx]
         - test ! -f $PREFIX/lib/libboost_{{ each_lib }}.dylib             # [osx]
+        - echo "Testing absence of boost_{{ each_lib }}.dll"              # [win]
         - if exist %LIBRARY_BIN%\boost_{{ each_lib }}.dll exit 1          # [win]
+        - echo "Testing absence of boost_{{ each_lib }}.lib"              # [win]
         - if exist %LIBRARY_LIB%\boost_{{ each_lib }}.lib exit 1          # [win]
         {% endif %}
 
         # static libraries
         {% if each_lib in boost_libs_static_only %}
         # present for those that are marked static-only above
+        - echo "Testing for static libboost_{{ each_lib }}.a"             # [unix]
         - test -f $PREFIX/lib/libboost_{{ each_lib }}.a                   # [unix]
+        - echo "Testing for static libboost_{{ each_lib }}.lib"           # [win]
         - if not exist %LIBRARY_LIB%\libboost_{{ each_lib }}.lib exit 1   # [win]
         {% else %}
         # absent for default libs & the python ones
+        - echo "Testing absence of static libboost_{{ each_lib }}.a"      # [unix]
         - test ! -f $PREFIX/lib/libboost_{{ each_lib }}.a                 # [unix]
+        - echo "Testing absence of static libboost_{{ each_lib }}.lib"    # [win]
         - if exist %LIBRARY_LIB%\libboost_{{ each_lib }}.lib exit 1       # [win]
         {% endif %}
 
         # absence of CMake metadata
+        - echo "Testing absence of CMake metadata for boost_{{ each_lib }}-{{ version }}"  # [unix]
         - test ! -d $PREFIX/lib/cmake/boost_{{ each_lib }}-{{ version }}            # [unix]
+        - echo "Testing absence of CMake metadata for boost_{{ each_lib }}-{{ version }}"  # [win]
         - if exist %LIBRARY_LIB%\cmake\boost_{{ each_lib }}-{{ version }} exit 1    # [win]
       {% endfor %}
 
@@ -212,7 +231,9 @@ outputs:
         - python                                 # [build_platform != target_platform]
         - cross-python_{{ target_platform }}     # [build_platform != target_platform]
         - numpy                                  # [build_platform != target_platform]
-        - {{ compiler('cxx') }}
+        - {{ compiler('cxx') }}  # [osx]
+        - clang    # [linux or win]
+        - clangxx  # [linux or win]
         - {{ stdlib('c') }}
       host:
         # ensure python_impl gets picked up by smithy (by using it as a selector) and therefore

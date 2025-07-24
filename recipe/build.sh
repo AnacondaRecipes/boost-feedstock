@@ -25,12 +25,14 @@ LIBRARY_PATH="${PREFIX}/lib"
 # Always build PIC code for enable static linking into other shared libraries
 CXXFLAGS="${CXXFLAGS} -fPIC"
 
+export CC=clang
+export CXX=clang++
+
+TOOLSET=${CC}
+
 if [[ "${target_platform}" == osx* ]]; then
-    TOOLSET=clang
     # see https://conda-forge.org/docs/maintainer/knowledge_base/#newer-c-features-with-old-sdk
     CXXFLAGS="${CXXFLAGS} -D_LIBCPP_DISABLE_AVAILABILITY"
-elif [[ "${target_platform}" == linux* ]]; then
-    TOOLSET=gcc
 fi
 
 # http://www.boost.org/build/doc/html/bbv2/tasks/crosscompile.html

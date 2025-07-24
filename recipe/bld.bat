@@ -18,10 +18,15 @@ if %ERRORLEVEL% neq 0 exit 1
 
 mkdir temp_prefix
 
+set CC=clang
+set CXX=clang++
+
+set TOOLSET=%CC%
+
 :: Build step
 .\b2 install ^
     --prefix=temp_prefix ^
-    toolset=msvc-%VS_MAJOR%.0 ^
+    toolset=%TOOLSET%^
     address-model=%ARCH% ^
     variant=release ^
     threading=multi ^

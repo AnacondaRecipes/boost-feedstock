@@ -14,11 +14,16 @@ rmdir /s /q temp_prefix
 
 mkdir build-py
 
+set CC=clang
+set CXX=clang++
+
+set TOOLSET=%CC%
+
 :: Build step
 .\b2 install ^
     --build-dir=build-py ^
     --prefix=%LIBRARY_PREFIX% ^
-    toolset=msvc-%VS_MAJOR%.0 ^
+    toolset=%TOOLSET% ^
     address-model=%ARCH% ^
     variant=release ^
     threading=multi ^

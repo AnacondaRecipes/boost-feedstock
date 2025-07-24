@@ -27,11 +27,10 @@ CXXFLAGS="${CXXFLAGS} -fPIC"
 # Ensure we always find the correct Python headers (needed for PyPy builds)
 CXXFLAGS="${CXXFLAGS} -isystem $(python -c 'import sysconfig; print(sysconfig.get_config_var("INCLUDEPY"))')"
 
-if [[ "${target_platform}" == osx* ]]; then
-    TOOLSET=clang
-elif [[ "${target_platform}" == linux* ]]; then
-    TOOLSET=gcc
-fi
+export CC=clang
+export CXX=clang++
+
+TOOLSET=${CC}
 
 # http://www.boost.org/build/doc/html/bbv2/tasks/crosscompile.html
 cat <<EOF > ${SRC_DIR}/tools/build/src/site-config.jam

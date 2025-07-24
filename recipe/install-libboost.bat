@@ -1,6 +1,10 @@
 echo on
 
-set TOOLSET=msvc-%vc%.1
+set CC=clang
+set CXX=clang++
+
+set TOOLSET=%CC%
+
 set ARCH_STRING=x64
 set LAYOUT=system
 
@@ -11,7 +15,7 @@ set LAYOUT=system
   address-model=%ARCH%       ^
   variant=release            ^
   threading=multi            ^
-  link=static,shared         ^
+  link=shared                ^
   -j%CPU_COUNT%              ^
   --without-python           ^
   install                    

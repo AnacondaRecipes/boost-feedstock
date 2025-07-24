@@ -1,6 +1,10 @@
 echo on
 
-set TOOLSET=msvc-%vc%.1
+set CC=clang
+set CXX=clang++
+
+set TOOLSET=%CC%
+
 set ARCH_STRING=x64
 set LAYOUT=system
 set PY_VER_ND=%PY_VER:.=%
