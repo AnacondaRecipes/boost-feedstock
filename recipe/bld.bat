@@ -15,6 +15,7 @@ call bootstrap.bat
     variant=release ^
     threading=multi ^
     runtime-link=shared ^
+    cxxstd=20 ^
     link=static,shared ^
     --without-python ^
     -j%CPU_COUNT%
