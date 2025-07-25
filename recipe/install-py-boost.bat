@@ -1,9 +1,6 @@
 echo on
 
-set CC=clang
-set CXX=clang++
-
-set TOOLSET=%CC%
+set TOOLSET=msvc-%vc%.1
 
 set ARCH_STRING=x64
 set LAYOUT=system

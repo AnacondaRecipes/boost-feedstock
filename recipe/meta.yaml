@@ -35,10 +35,10 @@ build:
 
 requirements:
   build:
-    - {{ compiler('cxx') }}  # [osx]
+    - {{ compiler('cxx') }}  # [osx or win]
     - {{ stdlib('c') }}
-    - clang    # [linux or win]
-    - clangxx  # [linux or win]
+    - clang    # [linux]
+    - clangxx  # [linux]
     - binutils  # [linux]
     - cross-python_{{ target_platform }}     # [build_platform != target_platform]
     - python {{ PY_DUMMY_VER }}.*  # [build_platform != target_platform]
@@ -102,10 +102,10 @@ outputs:
     requirements:
       build:
         # for strong run-exports
-        - {{ compiler('cxx') }}  # [osx]
+        - {{ compiler('cxx') }}  # [osx or win]
         - {{ stdlib('c') }}
-        - clang    # [linux or win]
-        - clangxx  # [linux or win]
+        - clang    # [linux]
+        - clangxx  # [linux]
       host:
         - icu               # [unix]
         - libiconv          # [win]
@@ -235,9 +235,9 @@ outputs:
         - python                                 # [build_platform != target_platform]
         - cross-python_{{ target_platform }}     # [build_platform != target_platform]
         - numpy                                  # [build_platform != target_platform]
-        - {{ compiler('cxx') }}  # [osx]
-        - clang    # [linux or win]
-        - clangxx  # [linux or win]
+        - {{ compiler('cxx') }}  # [osx or win]
+        - clang    # [linux]
+        - clangxx  # [linux]
         - {{ stdlib('c') }}
       host:
         # ensure python_impl gets picked up by smithy (by using it as a selector) and therefore
