@@ -115,8 +115,8 @@ outputs:
         - zstd
       run:
         # We don't get the run_exports for free on linux.
-        - libstdcxx-ng  # [linux]
-        - libgcc-ng  # [linux]
+        - {{ pin_compatible('libstdcxx-ng', max_pin=None) }}  # [linux]
+        - {{ pin_compatible('libgcc-ng', max_pin=None) }}     # [linux]
       run_constrained:
         # avoid co-installation with old naming of package
         - boost-cpp <0.0a0
@@ -252,8 +252,8 @@ outputs:
         - python
         - {{ pin_subpackage("libboost", exact=True) }}
         # We don't get the run_exports for free on linux.
-        - libstdcxx-ng  # [linux]
-        - libgcc-ng     # [linux]
+        - {{ pin_compatible('libstdcxx-ng', max_pin=None) }}  # [linux]
+        - {{ pin_compatible('libgcc-ng', max_pin=None) }}     # [linux]
       run_constrained:
         # avoid co-installation with old naming of package
         - boost <0.0a0
