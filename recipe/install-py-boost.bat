@@ -1,6 +1,7 @@
 echo on
 
 set TOOLSET=msvc-%vc%.1
+
 set ARCH_STRING=x64
 set LAYOUT=system
 set PY_VER_ND=%PY_VER:.=%
