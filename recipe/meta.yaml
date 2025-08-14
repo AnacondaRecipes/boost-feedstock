@@ -29,6 +29,7 @@ source:
 
 build:
   number: 0
+  skip: true  # [win]
   script_env:
     - PY_DUMMY_VER={{ PY_DUMMY_VER }}
     - NP_DUMMY_VER={{ NP_DUMMY_VER }}
