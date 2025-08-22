@@ -1,0 +1,2 @@
+channels:
+  - https://staging.continuum.io/prefect/llvm-20.1.8-stage2-build-0
