@@ -28,12 +28,13 @@ if "%ARCH%"=="arm64" (
     :: Use Windows Fibers for Boost.Context on ARM64 (no fcontext asm support)
     set B2_CONTEXT_IMPL=winfib
     :: Exclude libraries that don't support ARM64: coroutine (uses fcontext directly), mpi (no ARM64 support)
-    set B2_ARM64_EXCLUSIONS=--without-coroutine --without-mpi
+    :: Disable PCH to avoid compiler memory exhaustion on ARM64
+    set B2_ARM64_OPTIONS=--without-coroutine --without-mpi pch=off
 ) else (
     set B2_ADDRESS_MODEL=%ARCH%
     set B2_ARCHITECTURE=x86
     set B2_CONTEXT_IMPL=fcontext
-    set B2_ARM64_EXCLUSIONS=
+    set B2_ARM64_OPTIONS=
 )
 
 :: Build step
@@ -61,7 +62,7 @@ if "%ARCH%"=="arm64" (
     -s ZSTD_BINARY=zstd ^
     --layout=system ^
     -j%CPU_COUNT% ^
-    %B2_ARM64_EXCLUSIONS%
+    %B2_ARM64_OPTIONS%
 if %ERRORLEVEL% neq 0 exit 1
 
 :: Set BOOST_AUTO_LINK_NOMANGLE so that auto-linking uses system layout
