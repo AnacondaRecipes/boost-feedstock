@@ -9,10 +9,13 @@ if "%ARCH%"=="arm64" (
     set B2_ARCHITECTURE=arm
     :: Use Windows Fibers for Boost.Context on ARM64 (no fcontext asm support)
     set B2_CONTEXT_IMPL=winfib
+    :: Exclude libraries that don't support ARM64: coroutine (uses fcontext directly), mpi (no ARM64 support)
+    set B2_ARM64_EXCLUSIONS=--without-coroutine --without-mpi
 ) else (
     set B2_ADDRESS_MODEL=%ARCH%
     set B2_ARCHITECTURE=x86
     set B2_CONTEXT_IMPL=fcontext
+    set B2_ARM64_EXCLUSIONS=
 )
 
 .\b2                              ^
@@ -27,6 +30,7 @@ if "%ARCH%"=="arm64" (
   link=shared                     ^
   -j%CPU_COUNT%                   ^
   --without-python                ^
+  %B2_ARM64_EXCLUSIONS%           ^
   install                    
   
 if errorlevel 1 (
