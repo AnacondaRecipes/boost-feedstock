@@ -2,19 +2,31 @@ echo on
 
 set TOOLSET=msvc-%vc%.1
 
-set ARCH_STRING=x64
-set LAYOUT=system
+:: Set address-model and architecture for Boost.Build
+:: ARCH is "64" on win-64 but "arm64" on win-arm64
+if "%ARCH%"=="arm64" (
+    set B2_ADDRESS_MODEL=64
+    set B2_ARCHITECTURE=arm
+    :: Use Windows Fibers for Boost.Context on ARM64 (no fcontext asm support)
+    set B2_CONTEXT_IMPL=winfib
+) else (
+    set B2_ADDRESS_MODEL=%ARCH%
+    set B2_ARCHITECTURE=x86
+    set B2_CONTEXT_IMPL=fcontext
+)
 
-.\b2                         ^
-  --prefix=%LIBRARY_PREFIX%  ^
-  --layout=%LAYOUT%          ^
-  toolset=%TOOLSET%          ^
-  address-model=%ARCH%       ^
-  variant=release            ^
-  threading=multi            ^
-  link=shared                ^
-  -j%CPU_COUNT%              ^
-  --without-python           ^
+.\b2                              ^
+  --prefix=%LIBRARY_PREFIX%       ^
+  --layout=system                 ^
+  toolset=%TOOLSET%               ^
+  address-model=%B2_ADDRESS_MODEL% ^
+  architecture=%B2_ARCHITECTURE%  ^
+  context-impl=%B2_CONTEXT_IMPL%  ^
+  variant=release                 ^
+  threading=multi                 ^
+  link=shared                     ^
+  -j%CPU_COUNT%                   ^
+  --without-python                ^
   install                    
   
 if errorlevel 1 (
