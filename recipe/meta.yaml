@@ -14,7 +14,7 @@
 # we only need _a_ python version to build the headers for libboost-headers,
 # make it accessible in the build scripts via build/script_env below.
 {% set PY_DUMMY_VER = "3.10" %}
-{% set NP_DUMMY_VER = "2.0" %}
+{% set NP_DUMMY_VER = "2.1" %}
 
 package:
   name: boost-split
