@@ -16,12 +16,23 @@ mkdir build-py
 
 set TOOLSET=msvc-%vc%.1
 
+:: Set address-model and architecture for Boost.Build
+:: ARCH is "64" on win-64 but "arm64" on win-arm64
+if "%ARCH%"=="arm64" (
+    set B2_ADDRESS_MODEL=64
+    set B2_ARCHITECTURE=arm
+) else (
+    set B2_ADDRESS_MODEL=%ARCH%
+    set B2_ARCHITECTURE=x86
+)
+
 :: Build step
 .\b2 install ^
     --build-dir=build-py ^
     --prefix=%LIBRARY_PREFIX% ^
     toolset=%TOOLSET% ^
-    address-model=%ARCH% ^
+    address-model=%B2_ADDRESS_MODEL% ^
+    architecture=%B2_ARCHITECTURE% ^
     variant=release ^
     threading=multi ^
     link=shared ^
