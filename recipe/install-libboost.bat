@@ -1,24 +1,16 @@
-echo on
+@echo on
+
+:: Check if this is ARM64 build - use CMake instead of b2
+if "%ARCH%"=="arm64" goto :cmake_build
+
+:: ============================================================
+:: B2 BUILD (win-64 and other non-ARM64 platforms)
+:: ============================================================
 
 set TOOLSET=msvc-%vc%.1
-
-:: Set address-model and architecture for Boost.Build
-:: ARCH is "64" on win-64 but "arm64" on win-arm64
-if "%ARCH%"=="arm64" (
-    set B2_ADDRESS_MODEL=64
-    set B2_ARCHITECTURE=arm
-    :: Use Windows Fibers for Boost.Context on ARM64 (no fcontext asm support)
-    set B2_CONTEXT_IMPL=winfib
-    :: Exclude libraries that don't support ARM64: coroutine (uses fcontext directly), mpi (no ARM64 support)
-    :: Disable PCH to avoid compiler memory exhaustion on ARM64
-    :: Define BOOST_ARCH_ARM to help with architecture detection
-    set B2_ARM64_OPTIONS=--without-coroutine --without-mpi pch=off define=BOOST_ARCH_ARM=1
-) else (
-    set B2_ADDRESS_MODEL=%ARCH%
-    set B2_ARCHITECTURE=x86
-    set B2_CONTEXT_IMPL=fcontext
-    set B2_ARM64_OPTIONS=
-)
+set B2_ADDRESS_MODEL=%ARCH%
+set B2_ARCHITECTURE=x86
+set B2_CONTEXT_IMPL=fcontext
 
 .\b2                              ^
   --prefix=%LIBRARY_PREFIX%       ^
@@ -32,7 +24,6 @@ if "%ARCH%"=="arm64" (
   link=shared                     ^
   -j%CPU_COUNT%                   ^
   --without-python                ^
-  %B2_ARM64_OPTIONS%              ^
   install                    
   
 if errorlevel 1 (
@@ -53,5 +44,50 @@ move %LIBRARY_PREFIX%\lib\boost_*.dll %LIBRARY_BIN%
 move %LIBRARY_PREFIX%\share\.b2 %LIBRARY_PREFIX%\share\b2
 copy %LIBRARY_PREFIX%\share\b2.exe %LIBRARY_BIN%\b2.exe
 copy %LIBRARY_PREFIX%\share\b2.exe %LIBRARY_BIN%\bjam.exe
+
+exit /b 0
+
+:: ============================================================
+:: CMAKE BUILD (win-arm64)
+:: ============================================================
+:cmake_build
+@echo on
+echo "Building Boost with CMake for ARM64 (install-libboost)"
+
+mkdir build-libboost
+
+:: Configure CMake
+cmake -G Ninja -B build-libboost -S . ^
+    -DCMAKE_BUILD_TYPE=Release ^
+    -DCMAKE_INSTALL_PREFIX=%LIBRARY_PREFIX% ^
+    -DBUILD_SHARED_LIBS=ON ^
+    -DBOOST_INSTALL_LAYOUT=system ^
+    -DBOOST_EXCLUDE_LIBRARIES=mpi;graph_parallel;coroutine ^
+    -DBOOST_ENABLE_PYTHON=OFF ^
+    -DBOOST_CONTEXT_IMPLEMENTATION=winfib ^
+    -DBOOST_IOSTREAMS_ENABLE_ZLIB=ON ^
+    -DBOOST_IOSTREAMS_ENABLE_BZIP2=ON ^
+    -DBOOST_IOSTREAMS_ENABLE_ZSTD=ON ^
+    -DZLIB_ROOT=%LIBRARY_PREFIX% ^
+    -DBZIP2_ROOT=%LIBRARY_PREFIX% ^
+    -Dzstd_ROOT=%LIBRARY_PREFIX%
+if %ERRORLEVEL% neq 0 exit /b 1
+
+:: Build
+cmake --build build-libboost --config Release -j %CPU_COUNT%
+if %ERRORLEVEL% neq 0 exit /b 1
+
+:: Install
+cmake --install build-libboost --config Release
+if %ERRORLEVEL% neq 0 exit /b 1
+
+:: Remove Python headers as we don't build Boost.Python.
+if exist %LIBRARY_INC%\boost\python.hpp del %LIBRARY_INC%\boost\python.hpp
+if exist %LIBRARY_INC%\boost\python rmdir /s /q %LIBRARY_INC%\boost\python
+
+:: Move DLLs from bin to LIBRARY_BIN
+if exist %LIBRARY_PREFIX%\bin\boost_*.dll (
+    move %LIBRARY_PREFIX%\bin\boost_*.dll %LIBRARY_BIN%
+)
 
 exit /b 0

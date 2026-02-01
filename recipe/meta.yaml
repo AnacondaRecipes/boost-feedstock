@@ -21,12 +21,16 @@ package:
   name: boost-split
   version: {{ version }}
 
+# Use CMake-compatible archive from GitHub for win-arm64 (official archives don't support CMake)
+# Use official archives with b2 build system for all other platforms
 source:
-  url: https://archives.boost.io/release/{{ version }}/source/boost_{{ version|replace(".", "_") }}.tar.bz2
-  sha256: 46d9d2c06637b219270877c9e16155cbd015b6dc84349af064c088e9b5b12f7b
-  patches:
-    # ensure our compiler flags get used during bootstrapping
-    - patches/0001-Add-default-value-for-cxx-and-cxxflags-options-for-t.patch
+  - url: https://github.com/boostorg/boost/releases/download/boost-{{ version }}/boost-{{ version }}-cmake.tar.xz  # [win and arm64]
+    sha256: f48b48390380cfb94a629872346e3a81370dc498896f16019ade727ab72eb1ec  # [win and arm64]
+  - url: https://archives.boost.io/release/{{ version }}/source/boost_{{ version|replace(".", "_") }}.tar.bz2  # [not (win and arm64)]
+    sha256: 46d9d2c06637b219270877c9e16155cbd015b6dc84349af064c088e9b5b12f7b  # [not (win and arm64)]
+    patches:  # [not (win and arm64)]
+      # ensure our compiler flags get used during bootstrapping
+      - patches/0001-Add-default-value-for-cxx-and-cxxflags-options-for-t.patch  # [not (win and arm64)]
 
 build:
   number: 0
@@ -41,10 +45,12 @@ requirements:
     - clang    # [linux]
     - clangxx  # [linux]
     - binutils  # [linux]
+    - cmake        # [win and arm64]
+    - ninja-base   # [win and arm64]
     - cross-python_{{ target_platform }}     # [build_platform != target_platform]
     - python {{ PY_DUMMY_VER }}.*  # [build_platform != target_platform]
     - numpy {{ NP_DUMMY_VER }}.*             # [build_platform != target_platform]
-    - ruby *
+    - ruby *  # [not (win and arm64)]
   host:
     - icu               # [unix]
     - xz                # [unix]
@@ -240,6 +246,8 @@ outputs:
         - clang    # [linux]
         - clangxx  # [linux]
         - {{ stdlib('c') }}
+        - cmake        # [win and arm64]
+        - ninja-base   # [win and arm64]
       host:
         # ensure python_impl gets picked up by smithy (by using it as a selector) and therefore
         # populated in the .ci_config/*.yaml files, for use in {build,install}-py.{sh,bat}.
