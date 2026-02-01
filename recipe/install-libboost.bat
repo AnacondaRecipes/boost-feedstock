@@ -11,7 +11,8 @@ if "%ARCH%"=="arm64" (
     set B2_CONTEXT_IMPL=winfib
     :: Exclude libraries that don't support ARM64: coroutine (uses fcontext directly), mpi (no ARM64 support)
     :: Disable PCH to avoid compiler memory exhaustion on ARM64
-    set B2_ARM64_OPTIONS=--without-coroutine --without-mpi pch=off
+    :: Define BOOST_ARCH_ARM to help with architecture detection
+    set B2_ARM64_OPTIONS=--without-coroutine --without-mpi pch=off define=BOOST_ARCH_ARM=1
 ) else (
     set B2_ADDRESS_MODEL=%ARCH%
     set B2_ARCHITECTURE=x86
