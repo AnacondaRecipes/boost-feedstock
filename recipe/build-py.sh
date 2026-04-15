@@ -27,10 +27,15 @@ CXXFLAGS="${CXXFLAGS} -fPIC"
 # Ensure we always find the correct Python headers (needed for PyPy builds)
 CXXFLAGS="${CXXFLAGS} -isystem $(python -c 'import sysconfig; print(sysconfig.get_config_var("INCLUDEPY"))')"
 
-export CC=clang
-export CXX=clang++
-
 TOOLSET=${CC}
+
+if [[ "${target_platform}" == osx* ]]; then
+    TOOLSET=clang
+    # see https://conda-forge.org/docs/maintainer/knowledge_base/#newer-c-features-with-old-sdk
+    CXXFLAGS="${CXXFLAGS} -D_LIBCPP_DISABLE_AVAILABILITY"
+elif [[ "${target_platform}" == linux* ]]; then
+    TOOLSET=gcc
+fi
 
 # http://www.boost.org/build/doc/html/bbv2/tasks/crosscompile.html
 cat <<EOF > ${SRC_DIR}/tools/build/src/site-config.jam
@@ -46,9 +51,6 @@ if [ "${ADDRESS_MODEL}" == "aarch64" ] || [ "${ADDRESS_MODEL}" == "arm64" ]; the
     ADDRESS_MODEL=64
     ARCHITECTURE=arm
     ABI="aapcs"
-elif [ "${ADDRESS_MODEL}" == "ppc64le" ]; then
-    ADDRESS_MODEL=64
-    ARCHITECTURE=power
 fi
 
 if [[ "$target_platform" == osx-* ]]; then
