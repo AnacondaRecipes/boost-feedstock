@@ -1,3 +1,4 @@
+{% set name = "boost" %}
 {% set version = "1.88.0" %}
 
 {% set boost_libs = [
@@ -5,9 +6,9 @@
     "date_time", "filesystem", "graph", "iostreams", "locale", "log", "log_setup",
     "math_c99", "math_c99f", "math_tr1", "math_tr1f", "prg_exec_monitor",
     "program_options", "random", "regex", "serialization", "system", "thread",
-    "timer", "type_erasure", "unit_test_framework", "wave", "wserialization"
+    "timer", "type_erasure", "unit_test_framework", "wave", "wserialization",
+    "math_c99l", "math_tr1l"
 ] %}
-{% set boost_libs = boost_libs + ["math_c99l", "math_tr1l"] %}  # [not ppc64le]
 {% set boost_libs_static_only = ["exception", "test_exec_monitor"] %}
 {% set boost_libs_py = ["python%s" % py, "numpy%s" % py] %}
 
@@ -17,39 +18,38 @@
 {% set NP_DUMMY_VER = "2.0" %}
 
 package:
-  name: boost-split
+  name: {{ name }}-split
   version: {{ version }}
 
 source:
-  url: https://archives.boost.io/release/{{ version }}/source/boost_{{ version|replace(".", "_") }}.tar.bz2
+  url: https://archives.boost.io/release/{{ version }}/source/{{ name }}_{{ version|replace(".", "_") }}.tar.bz2
   sha256: 46d9d2c06637b219270877c9e16155cbd015b6dc84349af064c088e9b5b12f7b
   patches:
     # ensure our compiler flags get used during bootstrapping
     - patches/0001-Add-default-value-for-cxx-and-cxxflags-options-for-t.patch
 
 build:
-  number: 0
+  number: 1
   script_env:
     - PY_DUMMY_VER={{ PY_DUMMY_VER }}
     - NP_DUMMY_VER={{ NP_DUMMY_VER }}
 
 requirements:
   build:
-    - {{ compiler('cxx') }}  # [osx or win]
     - {{ stdlib('c') }}
-    - clang    # [linux]
-    - clangxx  # [linux]
-    - binutils  # [linux]
+    - {{ compiler('cxx') }}
     - cross-python_{{ target_platform }}     # [build_platform != target_platform]
     - python {{ PY_DUMMY_VER }}.*  # [build_platform != target_platform]
     - numpy {{ NP_DUMMY_VER }}.*             # [build_platform != target_platform]
     - ruby *
   host:
-    - icu               # [unix]
-    - xz                # [unix]
-    - bzip2
-    - zlib
-    - zstd
+    - icu {{ icu }}
+    - xz {{ xz }}
+    - bzip2 {{ bzip2 }}
+    - zlib {{ zlib }}
+    - zstd {{ zstd }}
+    - openssl {{ openssl }}
+    - libiconv {{ libiconv }}
     # see above
     - python {{ PY_DUMMY_VER }}.*
     - numpy {{ NP_DUMMY_VER }}.*
@@ -84,8 +84,7 @@ outputs:
 
         # absence of all libraries (shared & static) + CMake metadata
         {% for each_lib in boost_libs + boost_libs_static_only + boost_libs_py %}
-        - test ! -f $PREFIX/lib/libboost_{{ each_lib }}.so                # [linux]
-        - test ! -f $PREFIX/lib/libboost_{{ each_lib }}.dylib             # [osx]
+        - test ! -f $PREFIX/lib/libboost_{{ each_lib }}${SHLIB_EXT}       # [unix]
         - test ! -f $PREFIX/lib/libboost_{{ each_lib }}.a                 # [unix]
         - if exist %LIBRARY_BIN%\boost_{{ each_lib }}.dll exit 1          # [win]
         - if exist %LIBRARY_LIB%\boost_{{ each_lib }}.lib exit 1          # [win]
@@ -102,17 +101,16 @@ outputs:
     requirements:
       build:
         # for strong run-exports
-        - {{ compiler('cxx') }}  # [osx or win]
         - {{ stdlib('c') }}
-        - clang    # [linux]
-        - clangxx  # [linux]
+        - {{ compiler('cxx') }}
       host:
-        - icu               # [unix]
-        - libiconv          # [win]
-        - bzip2
-        - xz
-        - zlib
-        - zstd
+        - icu {{ icu }}
+        - xz {{ xz }}
+        - bzip2 {{ bzip2 }}
+        - zlib {{ zlib }}
+        - zstd {{ zstd }}
+        - openssl {{ openssl }}
+        - libiconv {{ libiconv }}
       run:
         # We don't get the run_exports for free on linux.
         - {{ pin_compatible('libstdcxx-ng', max_pin=None) }}  # [linux]
@@ -138,20 +136,16 @@ outputs:
         # shared libraries
         {% if each_lib in boost_libs %}
         # default case: present
-        - echo "Testing for libboost_{{ each_lib }}.so"                   # [linux]
-        - test -f $PREFIX/lib/libboost_{{ each_lib }}.so                  # [linux]
-        - echo "Testing for libboost_{{ each_lib }}.dylib"                # [osx]
-        - test -f $PREFIX/lib/libboost_{{ each_lib }}.dylib               # [osx]
+        - echo "Testing for libboost_{{ each_lib }}${SHLIB_EXT}"          # [unix]
+        - test -f $PREFIX/lib/libboost_{{ each_lib }}${SHLIB_EXT}         # [unix]
         - echo "Testing for boost_{{ each_lib }}.dll"                     # [win]
         - if not exist %LIBRARY_BIN%\boost_{{ each_lib }}.dll exit 1      # [win]
         - echo "Testing for boost_{{ each_lib }}.lib"                     # [win]
         - if not exist %LIBRARY_LIB%\boost_{{ each_lib }}.lib exit 1      # [win]
         {% else %}
         # absent for libs that are static-only & the python ones
-        - echo "Testing absence of libboost_{{ each_lib }}.so"            # [linux]
-        - test ! -f $PREFIX/lib/libboost_{{ each_lib }}.so                # [linux]
-        - echo "Testing absence of libboost_{{ each_lib }}.dylib"         # [osx]
-        - test ! -f $PREFIX/lib/libboost_{{ each_lib }}.dylib             # [osx]
+        - echo "Testing absence of libboost_{{ each_lib }}${SHLIB_EXT}"   # [unix]
+        - test ! -f $PREFIX/lib/libboost_{{ each_lib }}${SHLIB_EXT}       # [unix]
         - echo "Testing absence of boost_{{ each_lib }}.dll"              # [win]
         - if exist %LIBRARY_BIN%\boost_{{ each_lib }}.dll exit 1          # [win]
         - echo "Testing absence of boost_{{ each_lib }}.lib"              # [win]
@@ -175,9 +169,9 @@ outputs:
 
         # absence of CMake metadata
         - echo "Testing absence of CMake metadata for boost_{{ each_lib }}-{{ version }}"  # [unix]
-        - test ! -d $PREFIX/lib/cmake/boost_{{ each_lib }}-{{ version }}            # [unix]
+        - test ! -d $PREFIX/lib/cmake/boost_{{ each_lib }}-{{ version }}                   # [unix]
         - echo "Testing absence of CMake metadata for boost_{{ each_lib }}-{{ version }}"  # [win]
-        - if exist %LIBRARY_LIB%\cmake\boost_{{ each_lib }}-{{ version }} exit 1    # [win]
+        - if exist %LIBRARY_LIB%\cmake\boost_{{ each_lib }}-{{ version }} exit 1           # [win]
       {% endfor %}
 
   # libboost headers + libs + metadata
@@ -232,13 +226,11 @@ outputs:
     script: build-py.bat  # [win]
     requirements:
       build:
+        - {{ stdlib('c') }}
+        - {{ compiler('cxx') }}
         - python                                 # [build_platform != target_platform]
         - cross-python_{{ target_platform }}     # [build_platform != target_platform]
         - numpy                                  # [build_platform != target_platform]
-        - {{ compiler('cxx') }}  # [osx or win]
-        - clang    # [linux]
-        - clangxx  # [linux]
-        - {{ stdlib('c') }}
       host:
         # ensure python_impl gets picked up by smithy (by using it as a selector) and therefore
         # populated in the .ci_config/*.yaml files, for use in {build,install}-py.{sh,bat}.
@@ -268,8 +260,7 @@ outputs:
         # Verify libraries.
         {% for each_lib in boost_libs_py %}
         # presence of shared libs
-        - test -f $PREFIX/lib/libboost_{{ each_lib }}.so              # [linux]
-        - test -f $PREFIX/lib/libboost_{{ each_lib }}.dylib           # [osx]
+        - test -f $PREFIX/lib/libboost_{{ each_lib }}${SHLIB_EXT}     # [unix]
         - if not exist %LIBRARY_BIN%\boost_{{ each_lib }}.dll exit 1  # [win]
         - if not exist %LIBRARY_LIB%\boost_{{ each_lib }}.lib exit 1  # [win]
 
@@ -319,12 +310,12 @@ outputs:
         - if not exist %LIBRARY_LIB%\cmake\boost_numpy-{{ version }} exit 1     # [win]
 
 about:
-  home: http://www.boost.org/
+  home: http://www.boost.org
   license: BSL-1.0
   license_file: LICENSE_1_0.txt
   summary: Free peer-reviewed portable C++ source libraries.
   dev_url: https://github.com/boostorg/boost
-  doc_url: https://www.boost.org/doc/
+  doc_url: https://www.boost.org/doc
 
 extra:
   recipe-maintainers:
