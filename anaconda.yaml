@@ -1,0 +1,11 @@
+anaconda_config_version: 1
+upstream_sources:
+  - webpage:
+      url: https://www.boost.org/users/download/
+      regex: https://boostorg.jfrog.io/artifactory/main/release/([\d.]+)/source/boost_(?:.*)\.tar\.bz2
+    packages:
+      - libboost
+      - libboost-devel
+      - libboost-headers
+      - libboost-python
+      - libboost-python-devel
