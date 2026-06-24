@@ -20,11 +20,31 @@ mkdir temp_prefix
 
 set TOOLSET=msvc-%vc%.1
 
+:: Set address-model and architecture for Boost.Build
+:: ARCH is "64" on win-64 but "arm64" on win-arm64
+if "%ARCH%"=="arm64" (
+    set B2_ADDRESS_MODEL=64
+    set B2_ARCHITECTURE=arm
+    :: Use Windows Fibers for Boost.Context on ARM64 (no fcontext asm support)
+    set B2_CONTEXT_IMPL=winfib
+    :: Exclude libraries that don't support ARM64: coroutine (uses fcontext directly), mpi (no ARM64 support)
+    :: Disable PCH to avoid compiler memory exhaustion on ARM64
+    :: Define BOOST_ARCH_ARM to help with architecture detection
+    set B2_ARM64_OPTIONS=--without-coroutine --without-mpi pch=off define=BOOST_ARCH_ARM=1
+) else (
+    set B2_ADDRESS_MODEL=%ARCH%
+    set B2_ARCHITECTURE=x86
+    set B2_CONTEXT_IMPL=fcontext
+    set B2_ARM64_OPTIONS=
+)
+
 :: Build step
 .\b2 install ^
     --prefix=temp_prefix ^
     toolset=%TOOLSET%^
-    address-model=%ARCH% ^
+    address-model=%B2_ADDRESS_MODEL% ^
+    architecture=%B2_ARCHITECTURE% ^
+    context-impl=%B2_CONTEXT_IMPL% ^
     variant=release ^
     threading=multi ^
     link=shared ^
@@ -42,7 +62,8 @@ set TOOLSET=msvc-%vc%.1
     -s ZSTD_LIBPATH=%LIBRARY_LIB% ^
     -s ZSTD_BINARY=zstd ^
     --layout=system ^
-    -j%CPU_COUNT%
+    -j%CPU_COUNT% ^
+    %B2_ARM64_OPTIONS%
 if %ERRORLEVEL% neq 0 exit 1
 
 :: Set BOOST_AUTO_LINK_NOMANGLE so that auto-linking uses system layout

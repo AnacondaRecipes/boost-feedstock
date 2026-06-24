@@ -2,20 +2,21 @@
 {% set version = "1.88.0" %}
 
 {% set boost_libs = [
-    "atomic", "charconv", "chrono", "cobalt", "container", "context", "contract", "coroutine",
+    "atomic", "charconv", "chrono", "cobalt", "container", "context", "contract",
     "date_time", "filesystem", "graph", "iostreams", "locale", "log", "log_setup",
     "math_c99", "math_c99f", "math_tr1", "math_tr1f", "prg_exec_monitor",
     "program_options", "random", "regex", "serialization", "system", "thread",
     "timer", "type_erasure", "unit_test_framework", "wave", "wserialization",
     "math_c99l", "math_tr1l"
 ] %}
+{% set boost_libs = boost_libs + ["coroutine"] %}  # [not (win and arm64)]
 {% set boost_libs_static_only = ["exception", "test_exec_monitor"] %}
 {% set boost_libs_py = ["python%s" % py, "numpy%s" % py] %}
 
 # we only need _a_ python version to build the headers for libboost-headers,
 # make it accessible in the build scripts via build/script_env below.
 {% set PY_DUMMY_VER = "3.10" %}
-{% set NP_DUMMY_VER = "2.0" %}
+{% set NP_DUMMY_VER = "2.1" %}
 
 package:
   name: {{ name }}-split
