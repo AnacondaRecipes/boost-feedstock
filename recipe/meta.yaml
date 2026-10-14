@@ -15,7 +15,7 @@
 
 # we only need _a_ python version to build the headers for libboost-headers,
 # make it accessible in the build scripts via build/script_env below.
-{% set PY_DUMMY_VER = "3.10" %}
+{% set PY_DUMMY_VER = "3.12" %}
 {% set NP_DUMMY_VER = "2.1" %}
 
 package:
@@ -30,7 +30,7 @@ source:
     - patches/0001-Add-default-value-for-cxx-and-cxxflags-options-for-t.patch
 
 build:
-  number: 2
+  number: 3
   script_env:
     - PY_DUMMY_VER={{ PY_DUMMY_VER }}
     - NP_DUMMY_VER={{ NP_DUMMY_VER }}
